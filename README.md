@@ -1,93 +1,191 @@
-# vg-ms-students
+# Microservicio de Gestión de Estudiantes
 
+Este es un microservicio reactivo construido con Spring WebFlux y MongoDB para la gestión de estudiantes y sus matrículas en aulas.
 
+## Stack Tecnológico
 
-## Getting started
+- Java 17
+- Spring Boot 2.7.0
+- Spring WebFlux (Programación Reactiva)
+- MongoDB Reactive
+- Project Reactor
+- Lombok
+- Maven
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Arquitectura del Proyecto
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+El proyecto sigue una Arquitectura Limpia (Clean Architecture) con la siguiente estructura:
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students.git
-git branch -M main
-git push -uf origin main
+src/main/java/pe/edu/vallegrande/msvstudents/
+├── application/
+│   └── service/         # Servicios de aplicación que implementan la lógica de negocio
+├── domain/
+│   ├── enums/          # Enumeraciones del dominio
+│   ├── models/         # Entidades y modelos del dominio
+│   └── repository/     # Interfaces de repositorio (puertos)
+└── infrastructure/
+    ├── config/         # Clases de configuración
+    ├── dto/            # Objetos de Transferencia de Datos (DTOs)
+    ├── exception/      # Manejo de excepciones
+    ├── repository/     # Implementaciones de repositorios (adaptadores)
+    ├── rest/           # Controladores REST
+    └── service/        # Implementaciones de servicios
 ```
 
-## Integrate with your tools
+## Dependencias Principales
 
-- [ ] [Set up project integrations](https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students/-/settings/integrations)
+```xml
+<!-- Spring Boot -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-webflux</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
 
-## Collaborate with your team
+<!-- Lombok para reducir código boilerplate -->
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.18.30</version>
+</dependency>
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+<!-- Reactor para programación reactiva -->
+<dependency>
+    <groupId>io.projectreactor</groupId>
+    <artifactId>reactor-core</artifactId>
+</dependency>
+```
 
-## Test and Deploy
+## Endpoints de la API
 
-Use the built-in continuous integration in GitLab.
+### Controlador de Estudiantes (`/api/v1/students`)
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+| Método | Endpoint | Descripción | Tipo de Respuesta |
+|--------|----------|-------------|-------------------|
+| GET | `/api/v1/students` | Obtener todos los estudiantes | Flux<StudentResponse> |
+| GET | `/api/v1/students/{id}` | Obtener estudiante por ID | Mono<StudentResponse> |
+| POST | `/api/v1/students` | Crear nuevo estudiante | Mono<StudentResponse> |
+| PUT | `/api/v1/students/{id}` | Actualizar estudiante | Mono<StudentResponse> |
+| DELETE | `/api/v1/students/{id}` | Eliminar estudiante (baja lógica) | Mono<Void> |
+| GET | `/api/v1/students/institution/{institutionId}` | Buscar estudiantes por institución | Flux<StudentResponse> |
+| GET | `/api/v1/students/status/{status}` | Buscar estudiantes por estado | Flux<StudentResponse> |
+| GET | `/api/v1/students/gender/{gender}` | Buscar estudiantes por género | Flux<StudentResponse> |
+| PUT | `/api/v1/students/{id}/restore` | Restaurar estudiante eliminado | Mono<StudentResponse> |
 
-***
+### Controlador de Matrículas (`/api/v1/classroom-students`)
 
-# Editing this README
+| Método | Endpoint | Descripción | Tipo de Respuesta |
+|--------|----------|-------------|-------------------|
+| GET | `/api/v1/classroom-students` | Obtener todas las matrículas | Flux<ClassroomStudentResponse> |
+| GET | `/api/v1/classroom-students/{id}` | Obtener matrícula por ID | Mono<ClassroomStudentResponse> |
+| POST | `/api/v1/classroom-students` | Crear nueva matrícula | Mono<ClassroomStudentResponse> |
+| PUT | `/api/v1/classroom-students/{id}` | Actualizar matrícula | Mono<ClassroomStudentResponse> |
+| DELETE | `/api/v1/classroom-students/{id}` | Eliminar matrícula (baja lógica) | Mono<Void> |
+| GET | `/api/v1/classroom-students/student/{studentId}` | Buscar matrículas por estudiante | Flux<ClassroomStudentResponse> |
+| GET | `/api/v1/classroom-students/classroom/{classroomId}` | Buscar matrículas por aula | Flux<ClassroomStudentResponse> |
+| GET | `/api/v1/classroom-students/status/{status}` | Buscar matrículas por estado | Flux<ClassroomStudentResponse> |
+| GET | `/api/v1/classroom-students/year/{year}` | Buscar matrículas por año | Flux<ClassroomStudentResponse> |
+| GET | `/api/v1/classroom-students/period/{period}` | Buscar matrículas por periodo | Flux<ClassroomStudentResponse> |
+| GET | `/api/v1/classroom-students/year/{year}/period/{period}` | Buscar por año y periodo | Flux<ClassroomStudentResponse> |
+| PUT | `/api/v1/classroom-students/{id}/restore` | Restaurar matrícula eliminada | Mono<ClassroomStudentResponse> |
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## Características Principales
 
-## Suggestions for a good README
+1. **Programación Reactiva**
+   - Uso de Project Reactor para operaciones no bloqueantes
+   - Mejor manejo de la concurrencia y recursos del sistema
+   - Respuestas asíncronas con Flux y Mono
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+2. **Base de Datos**
+   - MongoDB como base de datos NoSQL
+   - Acceso reactivo a datos con Spring Data MongoDB Reactive
+   - Operaciones CRUD asíncronas
 
-## Name
-Choose a self-explaining name for your project.
+3. **Arquitectura**
+   - Implementación de Clean Architecture
+   - Separación clara de responsabilidades
+   - Fácil mantenimiento y pruebas
+   - Independencia de frameworks
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+4. **Seguridad y Configuración**
+   - CORS habilitado para integración con frontends
+   - Endpoints de Actuator para monitoreo
+   - Manejo de excepciones personalizado
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+## Configuración e Instalación
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+1. Requisitos previos:
+   - Java 17 instalado
+   - MongoDB instalado y en ejecución
+   - Maven instalado
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+2. Pasos de instalación:
+   ```bash
+   # Clonar el repositorio
+   git clone [URL_DEL_REPOSITORIO]
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+   # Entrar al directorio
+   cd msv-students
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+   # Instalar dependencias
+   mvn clean install
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+   # Ejecutar la aplicación
+   mvn spring-boot:run
+   ```
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+3. Configuración de MongoDB:
+   - Editar `application.properties` o `application.yml`
+   - Configurar la URL de conexión a MongoDB
+   - Configurar el nombre de la base de datos
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+## Códigos de Estado HTTP
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+- 200: Éxito en la operación
+- 201: Recurso creado exitosamente
+- 204: Operación exitosa sin contenido de respuesta
+- 404: Recurso no encontrado
+- 500: Error interno del servidor
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+## Tipos de Respuesta
 
-## License
-For open source projects, say how it is licensed.
+El microservicio utiliza tipos reactivos para todas las respuestas:
+- `Flux<T>`: Para colecciones de elementos (streams)
+- `Mono<T>`: Para elementos únicos
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+## Manejo de Errores
+
+El sistema incluye un manejo de excepciones personalizado para:
+- Recursos no encontrados
+- Errores de validación
+- Errores de base de datos
+- Errores internos del servidor
+
+## Monitoreo
+
+Se incluyen endpoints de Actuator para monitoreo:
+- `/actuator/health`: Estado de salud del servicio
+- `/actuator/info`: Información del servicio
+- `/actuator/metrics`: Métricas del servicio
+
+## Repositorios
+
+- GitHub: https://github.com/Omarrivv/vg-ms-students
+- GitLab: https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students
+
+## Contribución
+
+1. Fork el repositorio
+2. Cree una rama para su feature (`git checkout -b feature/AmazingFeature`)
+3. Commit sus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abra un Pull Request
+

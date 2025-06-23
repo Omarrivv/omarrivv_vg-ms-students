@@ -1,4 +1,4 @@
-package pe.edu.vallegrande.msvstudents.domain.models;
+package pe.edu.vallegrande.msvstudents.domain.model;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;

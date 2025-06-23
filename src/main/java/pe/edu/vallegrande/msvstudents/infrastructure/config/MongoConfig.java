@@ -6,17 +6,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 
+import pe.edu.vallegrande.msvstudents.domain.model.ClassroomStudent;
+import pe.edu.vallegrande.msvstudents.domain.model.Student;
 import reactor.core.publisher.Flux;
 import java.time.LocalDate;
 import java.util.List;
 import reactor.core.publisher.Mono;
 import org.springframework.data.mongodb.core.query.Query;
 
-import pe.edu.vallegrande.msvstudents.domain.models.ClassroomStudent;
-import pe.edu.vallegrande.msvstudents.domain.models.Student;
-
 @Configuration
-@EnableReactiveMongoRepositories(basePackages = "pe.edu.vallegrande.msvstudents.domain.repository")
+@EnableReactiveMongoRepositories(basePackages = "pe.edu.vallegrande.msvstudents.infrastructure.repository")
 public class MongoConfig {
 
     @Bean

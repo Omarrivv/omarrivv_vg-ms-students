@@ -1,191 +1,277 @@
-# Microservicio de Gestión de Estudiantes
+# Microservicio de Estudiantes (MSV-Students)
 
-Este es un microservicio reactivo construido con Spring WebFlux y MongoDB para la gestión de estudiantes y sus matrículas en aulas.
+Este microservicio gestiona la información de estudiantes y sus matrículas en aulas para Valle Grande.
 
-## Stack Tecnológico
-
-- Java 17
-- Spring Boot 2.7.0
-- Spring WebFlux (Programación Reactiva)
-- MongoDB Reactive
-- Project Reactor
-- Lombok
-- Maven
-
-## Arquitectura del Proyecto
-
-El proyecto sigue una Arquitectura Limpia (Clean Architecture) con la siguiente estructura:
+## Estructura del Proyecto
 
 ```
 src/main/java/pe/edu/vallegrande/msvstudents/
-├── application/
-│   └── service/         # Servicios de aplicación que implementan la lógica de negocio
-├── domain/
-│   ├── enums/          # Enumeraciones del dominio
-│   ├── models/         # Entidades y modelos del dominio
-│   └── repository/     # Interfaces de repositorio (puertos)
-└── infrastructure/
-    ├── config/         # Clases de configuración
-    ├── dto/            # Objetos de Transferencia de Datos (DTOs)
-    ├── exception/      # Manejo de excepciones
-    ├── repository/     # Implementaciones de repositorios (adaptadores)
-    ├── rest/           # Controladores REST
-    └── service/        # Implementaciones de servicios
+├── MsvStudentsApplication.java
+├── application
+│   └── service
+│       ├── ClassroomStudentService.java
+│       ├── StudentService.java
+│       └── impl
+│           ├── ClassroomStudentServiceImpl.java
+│           └── StudentServiceImpl.java
+├── domain
+│   ├── enums
+│   │   ├── DocumentType.java
+│   │   ├── Gender.java
+│   │   └── Status.java
+│   └── model
+│       ├── ClassroomStudent.java
+│       └── Student.java
+└── infrastructure
+    ├── config
+    │   └── WebConfig.java
+    ├── dto
+    │   ├── request
+    │   │   ├── ClassroomStudentRequest.java
+    │   │   └── StudentRequest.java
+    │   └── response
+    │       ├── ClassroomStudentResponse.java
+    │       └── StudentResponse.java
+    ├── exception
+    │   └── GlobalExceptionHandler.java
+    ├── repository
+    │   ├── ClassroomStudentRepository.java
+    │   ├── StudentRepository.java
+    │   └── impl
+    │       ├── ClassroomStudentRepositoryImpl.java
+    │       └── StudentRepositoryImpl.java
+    └── rest
+        ├── ClassroomStudentController.java
+        └── StudentController.java
 ```
 
-## Dependencias Principales
+## Tecnologías Utilizadas
 
-```xml
-<!-- Spring Boot -->
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-webflux</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-actuator</artifactId>
-</dependency>
+- Spring Boot
+- Spring WebFlux (Programación Reactiva)
+- MongoDB
+- Lombok
+- Java 17
 
-<!-- Lombok para reducir código boilerplate -->
-<dependency>
-    <groupId>org.projectlombok</groupId>
-    <artifactId>lombok</artifactId>
-    <version>1.18.30</version>
-</dependency>
+## Endpoints
 
-<!-- Reactor para programación reactiva -->
-<dependency>
-    <groupId>io.projectreactor</groupId>
-    <artifactId>reactor-core</artifactId>
-</dependency>
+### Estudiantes (`/api/v1/students`)
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/` | Obtener todos los estudiantes |
+| GET | `/{id}` | Obtener estudiante por ID |
+| POST | `/` | Crear nuevo estudiante |
+| PUT | `/{id}` | Actualizar estudiante existente |
+| DELETE | `/{id}` | Eliminar estudiante (cambio de estado a inactivo) |
+| GET | `/institution/{institutionId}` | Obtener estudiantes por ID de institución |
+| GET | `/status/{status}` | Obtener estudiantes por estado |
+| GET | `/gender/{gender}` | Obtener estudiantes por género |
+| PUT | `/{id}/restore` | Restaurar estudiante eliminado |
+
+### Matrículas (`/api/v1/classroom-students`)
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/` | Obtener todas las matrículas |
+| GET | `/{id}` | Obtener matrícula por ID |
+| POST | `/` | Crear nueva matrícula |
+| PUT | `/{id}` | Actualizar matrícula existente |
+| DELETE | `/{id}` | Eliminar matrícula (cambio de estado a inactivo) |
+| GET | `/student/{studentId}` | Obtener matrículas por ID de estudiante |
+| GET | `/classroom/{classroomId}` | Obtener matrículas por ID de aula |
+| GET | `/status/{status}` | Obtener matrículas por estado |
+| GET | `/year/{year}` | Obtener matrículas por año |
+| GET | `/period/{period}` | Obtener matrículas por periodo |
+| GET | `/year/{year}/period/{period}` | Obtener matrículas por año y periodo |
+| PUT | `/{id}/restore` | Restaurar matrícula eliminada |
+
+## Modelos de Datos
+
+### StudentRequest
+```json
+{
+    "institutionId": "string",
+    "firstName": "string",
+    "lastName": "string",
+    "documentType": "DNI | PASAPORTE | CARNET DE EXTRANJERIA | OTROS",
+    "documentNumber": "string",
+    "gender": "M | F",
+    "birthDate": "YYYY-MM-DD",
+    "address": "string",
+    "phone": "string",
+    "email": "string",
+    "nameQr": "string"
+}
 ```
 
-## Endpoints de la API
+### ClassroomStudentRequest
+```json
+{
+    "classroomId": "string",
+    "studentId": "string",
+    "enrollmentYear": "string",
+    "enrollmentPeriod": "string"
+}
+```
 
-### Controlador de Estudiantes (`/api/v1/students`)
+## Enumeraciones
 
-| Método | Endpoint | Descripción | Tipo de Respuesta |
-|--------|----------|-------------|-------------------|
-| GET | `/api/v1/students` | Obtener todos los estudiantes | Flux<StudentResponse> |
-| GET | `/api/v1/students/{id}` | Obtener estudiante por ID | Mono<StudentResponse> |
-| POST | `/api/v1/students` | Crear nuevo estudiante | Mono<StudentResponse> |
-| PUT | `/api/v1/students/{id}` | Actualizar estudiante | Mono<StudentResponse> |
-| DELETE | `/api/v1/students/{id}` | Eliminar estudiante (baja lógica) | Mono<Void> |
-| GET | `/api/v1/students/institution/{institutionId}` | Buscar estudiantes por institución | Flux<StudentResponse> |
-| GET | `/api/v1/students/status/{status}` | Buscar estudiantes por estado | Flux<StudentResponse> |
-| GET | `/api/v1/students/gender/{gender}` | Buscar estudiantes por género | Flux<StudentResponse> |
-| PUT | `/api/v1/students/{id}/restore` | Restaurar estudiante eliminado | Mono<StudentResponse> |
+### Estado (Status)
+- `ACTIVE`: "A" - Registro activo
+- `INACTIVE`: "I" - Registro inactivo
 
-### Controlador de Matrículas (`/api/v1/classroom-students`)
+### Género (Gender)
+- `MALE`: "M" - Masculino
+- `FEMALE`: "F" - Femenino
 
-| Método | Endpoint | Descripción | Tipo de Respuesta |
-|--------|----------|-------------|-------------------|
-| GET | `/api/v1/classroom-students` | Obtener todas las matrículas | Flux<ClassroomStudentResponse> |
-| GET | `/api/v1/classroom-students/{id}` | Obtener matrícula por ID | Mono<ClassroomStudentResponse> |
-| POST | `/api/v1/classroom-students` | Crear nueva matrícula | Mono<ClassroomStudentResponse> |
-| PUT | `/api/v1/classroom-students/{id}` | Actualizar matrícula | Mono<ClassroomStudentResponse> |
-| DELETE | `/api/v1/classroom-students/{id}` | Eliminar matrícula (baja lógica) | Mono<Void> |
-| GET | `/api/v1/classroom-students/student/{studentId}` | Buscar matrículas por estudiante | Flux<ClassroomStudentResponse> |
-| GET | `/api/v1/classroom-students/classroom/{classroomId}` | Buscar matrículas por aula | Flux<ClassroomStudentResponse> |
-| GET | `/api/v1/classroom-students/status/{status}` | Buscar matrículas por estado | Flux<ClassroomStudentResponse> |
-| GET | `/api/v1/classroom-students/year/{year}` | Buscar matrículas por año | Flux<ClassroomStudentResponse> |
-| GET | `/api/v1/classroom-students/period/{period}` | Buscar matrículas por periodo | Flux<ClassroomStudentResponse> |
-| GET | `/api/v1/classroom-students/year/{year}/period/{period}` | Buscar por año y periodo | Flux<ClassroomStudentResponse> |
-| PUT | `/api/v1/classroom-students/{id}/restore` | Restaurar matrícula eliminada | Mono<ClassroomStudentResponse> |
+### Tipo de Documento (DocumentType)
+- `DNI`: "DNI" - Documento Nacional de Identidad
+- `PASSPORT`: "PASAPORTE" - Pasaporte
+- `FOREIGN_CARD`: "CARNET DE EXTRANJERIA" - Carnet de Extranjería
+- `OTHERS`: "OTROS" - Otros tipos de documento
 
-## Características Principales
+## Configuración CORS
 
-1. **Programación Reactiva**
-   - Uso de Project Reactor para operaciones no bloqueantes
-   - Mejor manejo de la concurrencia y recursos del sistema
-   - Respuestas asíncronas con Flux y Mono
-
-2. **Base de Datos**
-   - MongoDB como base de datos NoSQL
-   - Acceso reactivo a datos con Spring Data MongoDB Reactive
-   - Operaciones CRUD asíncronas
-
-3. **Arquitectura**
-   - Implementación de Clean Architecture
-   - Separación clara de responsabilidades
-   - Fácil mantenimiento y pruebas
-   - Independencia de frameworks
-
-4. **Seguridad y Configuración**
-   - CORS habilitado para integración con frontends
-   - Endpoints de Actuator para monitoreo
-   - Manejo de excepciones personalizado
-
-## Configuración e Instalación
-
-1. Requisitos previos:
-   - Java 17 instalado
-   - MongoDB instalado y en ejecución
-   - Maven instalado
-
-2. Pasos de instalación:
-   ```bash
-   # Clonar el repositorio
-   git clone [URL_DEL_REPOSITORIO]
-
-   # Entrar al directorio
-   cd msv-students
-
-   # Instalar dependencias
-   mvn clean install
-
-   # Ejecutar la aplicación
-   mvn spring-boot:run
-   ```
-
-3. Configuración de MongoDB:
-   - Editar `application.properties` o `application.yml`
-   - Configurar la URL de conexión a MongoDB
-   - Configurar el nombre de la base de datos
-
-## Códigos de Estado HTTP
-
-- 200: Éxito en la operación
-- 201: Recurso creado exitosamente
-- 204: Operación exitosa sin contenido de respuesta
-- 404: Recurso no encontrado
-- 500: Error interno del servidor
-
-## Tipos de Respuesta
-
-El microservicio utiliza tipos reactivos para todas las respuestas:
-- `Flux<T>`: Para colecciones de elementos (streams)
-- `Mono<T>`: Para elementos únicos
+El microservicio está configurado para permitir solicitudes CORS desde cualquier origen (*) con los métodos HTTP GET, POST, PUT, DELETE y OPTIONS.
 
 ## Manejo de Errores
 
-El sistema incluye un manejo de excepciones personalizado para:
-- Recursos no encontrados
-- Errores de validación
-- Errores de base de datos
-- Errores internos del servidor
+El sistema incluye un manejador global de excepciones que proporciona respuestas consistentes para los siguientes casos:
 
-## Monitoreo
+- Recurso no encontrado (404)
+- Errores de validación (400)
+- Errores internos del servidor (500)
 
-Se incluyen endpoints de Actuator para monitoreo:
-- `/actuator/health`: Estado de salud del servicio
-- `/actuator/info`: Información del servicio
-- `/actuator/metrics`: Métricas del servicio
+## Estado de Registros
 
-## Repositorios
+Los registros (estudiantes y matrículas) utilizan los siguientes estados:
 
-- GitHub: https://github.com/Omarrivv/vg-ms-students
-- GitLab: https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students
+- "A": Activo
+- "I": Inactivo
 
-## Contribución
+## Control de Versiones
 
-1. Fork el repositorio
-2. Cree una rama para su feature (`git checkout -b feature/AmazingFeature`)
-3. Commit sus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abra un Pull Request
+Este proyecto se mantiene en dos repositorios remotos: GitHub y GitLab. Los repositorios configurados son:
+- GitHub: https://github.com/Omarrivv/vg-ms-students.git
+- GitLab: https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students.git
 
+### Estado Actual de Remotos
+
+```bash
+# Ver los remotos configurados
+git remote -v
+
+# Resultado esperado:
+github  https://github.com/Omarrivv/vg-ms-students.git (fetch)
+github  https://github.com/Omarrivv/vg-ms-students.git (push)
+origin  https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students.git (fetch)
+origin  https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students.git (push)
+```
+
+### Subir Cambios a Ambos Repositorios
+
+1. Guardar los cambios locales:
+```bash
+# Ver el estado de los archivos
+git status
+
+# Agregar los archivos modificados
+git add .
+
+# Crear un commit con los cambios
+git commit -m "descripción de los cambios realizados"
+```
+
+2. Subir a GitLab (origin):
+```bash
+# Actualizar rama main desde GitLab
+git pull origin main
+
+# Subir cambios a GitLab
+git push origin main
+```
+
+3. Subir a GitHub:
+```bash
+# Actualizar rama main desde GitHub
+git pull github main
+
+# Subir cambios a GitHub
+git push github main
+```
+
+### Comandos Útiles
+
+```bash
+# Ver el historial de commits
+git log --oneline --graph --all
+
+# Ver en qué rama estás y su estado
+git status
+
+# Ver las diferencias antes de hacer commit
+git diff
+
+# Deshacer cambios en un archivo antes de hacer commit
+git checkout -- nombre-archivo
+
+# Crear una nueva rama
+git checkout -b nombre-rama
+
+# Cambiar de rama
+git checkout nombre-rama
+```
+
+### Resolución de Conflictos
+
+Si hay conflictos al hacer pull de algún repositorio:
+
+1. Identificar los archivos con conflictos (aparecerán en rojo al hacer git status)
+
+2. Abrir los archivos con conflictos y buscar las marcas de conflicto:
+```
+<<<<<<< HEAD
+tus cambios locales
+=======
+cambios del repositorio remoto
+>>>>>>> branch-name
+```
+
+3. Editar el archivo para mantener el código correcto y eliminar las marcas de conflicto
+
+4. Agregar los archivos resueltos:
+```bash
+git add .
+```
+
+5. Completar el merge:
+```bash
+git commit -m "resolver conflictos de merge"
+```
+
+6. Continuar con el push al repositorio correspondiente
+
+### Recomendaciones
+
+1. Siempre hacer pull antes de empezar a trabajar:
+```bash
+git pull origin main
+git pull github main
+```
+
+2. Crear commits pequeños y descriptivos
+
+3. En caso de duda sobre el estado del repositorio:
+```bash
+# Ver estado actual
+git status
+
+# Ver historial
+git log --oneline
+```
+
+4. Si necesitas deshacer el último commit (pero mantener los cambios):
+```bash
+git reset --soft HEAD~1
+```

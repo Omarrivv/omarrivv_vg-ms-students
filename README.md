@@ -1,49 +1,183 @@
 # Microservicio de Estudiantes (MSV-Students)
 
-Este microservicio gestiona la información de estudiantes y sus matrículas en aulas para Valle Grande.
+Este microservicio gestiona la información de estudiantes y sus matrículas en aulas para Valle Grande. Implementado con Spring WebFlux para manejo reactivo de datos.
 
 ## Estructura del Proyecto
 
 ```
 src/main/java/pe/edu/vallegrande/msvstudents/
-├── MsvStudentsApplication.java
-├── application
-│   └── service
-│       ├── ClassroomStudentService.java
-│       ├── StudentService.java
-│       └── impl
-│           ├── ClassroomStudentServiceImpl.java
-│           └── StudentServiceImpl.java
-├── domain
-│   ├── enums
-│   │   ├── DocumentType.java
-│   │   ├── Gender.java
-│   │   └── Status.java
-│   └── model
-│       ├── ClassroomStudent.java
-│       └── Student.java
-└── infrastructure
-    ├── config
-    │   └── WebConfig.java
-    ├── dto
-    │   ├── request
-    │   │   ├── ClassroomStudentRequest.java
-    │   │   └── StudentRequest.java
-    │   └── response
-    │       ├── ClassroomStudentResponse.java
-    │       └── StudentResponse.java
-    ├── exception
-    │   └── GlobalExceptionHandler.java
-    ├── repository
-    │   ├── ClassroomStudentRepository.java
-    │   ├── StudentRepository.java
-    │   └── impl
-    │       ├── ClassroomStudentRepositoryImpl.java
-    │       └── StudentRepositoryImpl.java
-    └── rest
-        ├── ClassroomStudentController.java
-        └── StudentController.java
+├── MsvStudentsApplication.java          # Punto de entrada de la aplicación Spring Boot
+├── application/                         # Capa de aplicación
+│   └── service/                        # Servicios de la aplicación
+│       ├── ClassroomStudentService     # Interfaz del servicio de matrículas
+│       ├── StudentService              # Interfaz del servicio de estudiantes
+│       └── impl/                       # Implementaciones de servicios
+│           ├── ClassroomStudentServiceImpl  # Implementación de matrículas
+│           └── StudentServiceImpl           # Implementación de estudiantes
+├── domain/                             # Capa de dominio
+│   ├── enums/                         # Enumeraciones del dominio
+│   │   ├── DocumentType               # Tipos de documento
+│   │   ├── Gender                     # Géneros
+│   │   └── Status                     # Estados de registros
+│   └── model/                         # Modelos de dominio
+│       ├── ClassroomStudent           # Entidad de matrícula
+│       └── Student                    # Entidad de estudiante
+└── infrastructure/                     # Capa de infraestructura
+    ├── config/                        # Configuraciones
+    │   └── WebConfig                  # Configuración CORS y Web
+    ├── dto/                          # Objetos de transferencia de datos
+    │   ├── request/                  # DTOs para peticiones
+    │   │   ├── ClassroomStudentRequest
+    │   │   └── StudentRequest
+    │   └── response/                 # DTOs para respuestas
+    │       ├── ClassroomStudentResponse
+    │       └── StudentResponse
+    ├── exception/                    # Manejo de excepciones
+    │   └── GlobalExceptionHandler    # Manejador global de excepciones
+    ├── repository/                   # Repositorios
+    │   ├── ClassroomStudentRepository
+    │   ├── StudentRepository
+    │   └── impl/                     # Implementaciones de repositorios
+    │       ├── ClassroomStudentRepositoryImpl
+    │       └── StudentRepositoryImpl
+    └── rest/                         # Controladores REST
+        ├── ClassroomStudentController
+        └── StudentController
 ```
+
+## Documentación de API
+
+### 1. API de Estudiantes
+Base URL: `/api/v1/students`
+
+#### Endpoints Principales
+
+| Método | Endpoint | Descripción | Código de Respuesta |
+|--------|----------|-------------|-------------------|
+| GET | `/` | Obtener todos los estudiantes | 200 |
+| GET | `/{id}` | Obtener estudiante por ID | 200, 404 |
+| POST | `/` | Crear nuevo estudiante | 201 |
+| PUT | `/{id}` | Actualizar estudiante | 200, 404 |
+| DELETE | `/{id}` | Desactivar estudiante | 204 |
+| PUT | `/{id}/restore` | Restaurar estudiante | 200, 404 |
+
+#### Endpoints de Filtrado
+
+| Método | Endpoint | Descripción | Código de Respuesta |
+|--------|----------|-------------|-------------------|
+| GET | `/institution/{institutionId}` | Filtrar por institución | 200 |
+| GET | `/status/{status}` | Filtrar por estado | 200 |
+| GET | `/gender/{gender}` | Filtrar por género | 200 |
+
+#### Ejemplo de Estudiante (POST/PUT)
+```json
+{
+    "institutionId": "2",
+    "firstName": "Omar code",
+    "lastName": "Rivera Rosas",
+    "documentType": "DNI",
+    "documentNumber": "09092929",
+    "gender": "M",
+    "birthDate": "2010-01-01",
+    "address": "EU. Rio de janeiro",
+    "phone": "900800700",
+    "email": "codex@mail.com",
+    "nameQr": "Omar code_Rivera Rosas_09235464"
+}
+```
+
+### 2. API de Matrículas
+Base URL: `/api/v1/classroom-students`
+
+#### Endpoints Principales
+
+| Método | Endpoint | Descripción | Código de Respuesta |
+|--------|----------|-------------|-------------------|
+| GET | `/` | Obtener todas las matrículas | 200 |
+| GET | `/{id}` | Obtener matrícula por ID | 200, 404 |
+| POST | `/` | Crear nueva matrícula | 201 |
+| PUT | `/{id}` | Actualizar matrícula | 200, 404 |
+| DELETE | `/{id}` | Desactivar matrícula | 204 |
+| PUT | `/{id}/restore` | Restaurar matrícula | 200, 404 |
+
+#### Endpoints de Filtrado
+
+| Método | Endpoint | Descripción | Código de Respuesta |
+|--------|----------|-------------|-------------------|
+| GET | `/student/{studentId}` | Filtrar por estudiante | 200 |
+| GET | `/classroom/{classroomId}` | Filtrar por aula | 200 |
+| GET | `/status/{status}` | Filtrar por estado | 200 |
+| GET | `/year/{year}` | Filtrar por año | 200 |
+| GET | `/period/{period}` | Filtrar por periodo | 200 |
+| GET | `/year/{year}/period/{period}` | Filtrar por año y periodo | 200 |
+
+#### Ejemplo de Matrícula (POST/PUT)
+```json
+{
+    "classroomId": "3",
+    "studentId": "682fdf276966753b037b8afb",
+    "enrollmentDate": "2024-01-01",
+    "status": "A",
+    "enrollmentYear": "2024",
+    "enrollmentPeriod": "2024-1"
+}
+```
+
+### 3. Valores Permitidos
+
+#### Estados (Status)
+- `A`: Activo
+- `I`: Inactivo
+
+#### Géneros (Gender)
+- `M`: Masculino
+- `F`: Femenino
+
+#### Tipos de Documento (DocumentType)
+- `DNI`: Documento Nacional de Identidad
+- `CARNET DE EXTRANJERIA`: Carnet de Extranjería
+
+### 4. Respuestas de Error
+
+#### Error 404 - Recurso no encontrado
+```json
+{
+    "message": "Estudiante no encontrado con ID: 682fdf276966753b037b8afb"
+}
+```
+
+#### Error 400 - Error de validación
+```json
+{
+    "message": "Error de validación",
+    "errors": {
+        "firstName": "El nombre es requerido",
+        "documentNumber": "El número de documento debe tener 8 dígitos"
+    }
+}
+```
+
+#### Error 500 - Error interno del servidor
+```json
+{
+    "message": "Error interno del servidor"
+}
+```
+
+### 5. Notas Importantes
+
+1. **Matrículas Activas**:
+   - Un estudiante solo puede tener una matrícula activa a la vez
+   - Al intentar crear una nueva matrícula para un estudiante con una activa, se retornará un error
+
+2. **Eliminación Lógica**:
+   - Los endpoints DELETE realizan una eliminación lógica (cambio de estado a 'I')
+   - Use el endpoint restore para reactivar registros
+
+3. **CORS**:
+   - La API permite solicitudes desde cualquier origen (*)
+   - Métodos permitidos: GET, POST, PUT, DELETE, OPTIONS
+   - Headers permitidos: Todos (*)
 
 ## Tecnologías Utilizadas
 
@@ -110,6 +244,8 @@ src/main/java/pe/edu/vallegrande/msvstudents/
 {
     "classroomId": "string",
     "studentId": "string",
+    "enrollmentDate": "2024-01-01",
+    "status": "A",
     "enrollmentYear": "string",
     "enrollmentPeriod": "string"
 }
@@ -152,126 +288,104 @@ Los registros (estudiantes y matrículas) utilizan los siguientes estados:
 
 ## Control de Versiones
 
-Este proyecto se mantiene en dos repositorios remotos: GitHub y GitLab. Los repositorios configurados son:
-- GitHub: https://github.com/Omarrivv/vg-ms-students.git
-- GitLab: https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students.git
-
-### Estado Actual de Remotos
-
+### Repositorios Configurados
 ```bash
-# Ver los remotos configurados
-git remote -v
+# GitHub
+github  https://github.com/Omarrivv/vg-ms-students.git
 
-# Resultado esperado:
-github  https://github.com/Omarrivv/vg-ms-students.git (fetch)
-github  https://github.com/Omarrivv/vg-ms-students.git (push)
-origin  https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students.git (fetch)
-origin  https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students.git (push)
+# GitLab
+origin  https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students.git
 ```
 
-### Subir Cambios a Ambos Repositorios
+### Ramas Disponibles
+- `main`: Rama principal
+- `temp-main`: Rama temporal
+- `vg-ms-students`: Rama de desarrollo
 
-1. Guardar los cambios locales:
+### Pasos para Pushear Cambios
+
+1. **Verificar la Rama Actual**:
 ```bash
-# Ver el estado de los archivos
-git status
+git branch
+# Deberías estar en la rama vg-ms-students
+```
 
-# Agregar los archivos modificados
+2. **Verificar Cambios Pendientes**:
+```bash
+git status
+```
+
+3. **Agregar y Commitear Cambios**:
+```bash
+# Agregar todos los cambios
 git add .
 
-# Crear un commit con los cambios
-git commit -m "descripción de los cambios realizados"
+# Crear commit
+git commit -m "descripción de tus cambios"
 ```
 
-2. Subir a GitLab (origin):
+4. **Push a GitLab (origin)**:
 ```bash
-# Actualizar rama main desde GitLab
-git pull origin main
+# Actualizar cambios remotos primero
+git pull origin vg-ms-students
 
-# Subir cambios a GitLab
-git push origin main
+# Subir cambios
+git push origin vg-ms-students
 ```
 
-3. Subir a GitHub:
+5. **Push a GitHub**:
 ```bash
-# Actualizar rama main desde GitHub
-git pull github main
+# Actualizar cambios remotos primero
+git pull github vg-ms-students
 
-# Subir cambios a GitHub
-git push github main
+# Subir cambios
+git push github vg-ms-students
 ```
 
-### Comandos Útiles
+### Solución de Problemas
 
+1. **Si hay conflictos en el pull**:
 ```bash
-# Ver el historial de commits
-git log --oneline --graph --all
+# 1. Resolver conflictos en los archivos marcados
+# 2. Agregar los archivos resueltos
+git add .
 
-# Ver en qué rama estás y su estado
-git status
+# 3. Completar el merge
+git commit -m "resolver conflictos de merge"
 
-# Ver las diferencias antes de hacer commit
-git diff
+# 4. Continuar con el push
+git push origin vg-ms-students
+git push github vg-ms-students
+```
 
-# Deshacer cambios en un archivo antes de hacer commit
-git checkout -- nombre-archivo
-
-# Crear una nueva rama
-git checkout -b nombre-rama
-
-# Cambiar de rama
+2. **Si necesitas cambiar de rama**:
+```bash
 git checkout nombre-rama
 ```
 
-### Resolución de Conflictos
-
-Si hay conflictos al hacer pull de algún repositorio:
-
-1. Identificar los archivos con conflictos (aparecerán en rojo al hacer git status)
-
-2. Abrir los archivos con conflictos y buscar las marcas de conflicto:
-```
-<<<<<<< HEAD
-tus cambios locales
-=======
-cambios del repositorio remoto
->>>>>>> branch-name
-```
-
-3. Editar el archivo para mantener el código correcto y eliminar las marcas de conflicto
-
-4. Agregar los archivos resueltos:
+3. **Si necesitas descartar cambios locales**:
 ```bash
-git add .
+git checkout -- archivo-modificado
+# o para todos los archivos
+git checkout -- .
 ```
-
-5. Completar el merge:
-```bash
-git commit -m "resolver conflictos de merge"
-```
-
-6. Continuar con el push al repositorio correspondiente
 
 ### Recomendaciones
 
-1. Siempre hacer pull antes de empezar a trabajar:
+1. **Siempre hacer pull antes de empezar a trabajar**:
 ```bash
-git pull origin main
-git pull github main
+git pull origin vg-ms-students
+git pull github vg-ms-students
 ```
 
-2. Crear commits pequeños y descriptivos
-
-3. En caso de duda sobre el estado del repositorio:
+2. **Verificar el estado antes de commits**:
 ```bash
-# Ver estado actual
 git status
-
-# Ver historial
-git log --oneline
+git diff
 ```
 
-4. Si necesitas deshacer el último commit (pero mantener los cambios):
+3. **En caso de duda, verificar la configuración**:
 ```bash
-git reset --soft HEAD~1
+git remote -v
+git branch
 ```

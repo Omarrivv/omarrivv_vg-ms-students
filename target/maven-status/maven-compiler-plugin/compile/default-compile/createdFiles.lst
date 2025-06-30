@@ -3,14 +3,14 @@ pe\edu\vallegrande\msvstudents\MsvStudentsApplication.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\response\StudentResponse$StudentResponseBuilder.class
 pe\edu\vallegrande\msvstudents\application\service\ClassroomStudentService.class
 pe\edu\vallegrande\msvstudents\application\service\impl\StudentServiceImpl.class
-pe\edu\vallegrande\msvstudents\domain\repository\ClassroomStudentRepository.class
-pe\edu\vallegrande\msvstudents\domain\repository\StudentRepository.class
-pe\edu\vallegrande\msvstudents\domain\models\ClassroomStudent.class
 pe\edu\vallegrande\msvstudents\domain\enums\DocumentType.class
+pe\edu\vallegrande\msvstudents\domain\model\Student.class
 pe\edu\vallegrande\msvstudents\domain\enums\Gender.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\response\StudentResponse.class
+pe\edu\vallegrande\msvstudents\infrastructure\repository\StudentRepository.class
 pe\edu\vallegrande\msvstudents\infrastructure\exception\ResourceNotFoundException.class
-pe\edu\vallegrande\msvstudents\domain\models\Student.class
+pe\edu\vallegrande\msvstudents\infrastructure\repository\impl\ClassroomStudentRepositoryImpl.class
+pe\edu\vallegrande\msvstudents\infrastructure\repository\impl\StudentRepositoryImpl.class
 pe\edu\vallegrande\msvstudents\domain\enums\Status.class
 pe\edu\vallegrande\msvstudents\infrastructure\config\MongoConfig.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\request\StudentRequest.class
@@ -19,6 +19,8 @@ pe\edu\vallegrande\msvstudents\infrastructure\config\WebConfig.class
 pe\edu\vallegrande\msvstudents\application\service\impl\ClassroomStudentServiceImpl.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\response\ClassroomStudentResponse$ClassroomStudentResponseBuilder.class
 pe\edu\vallegrande\msvstudents\infrastructure\rest\ClassroomStudentController.class
+pe\edu\vallegrande\msvstudents\infrastructure\repository\ClassroomStudentRepository.class
 pe\edu\vallegrande\msvstudents\infrastructure\rest\StudentController.class
+pe\edu\vallegrande\msvstudents\domain\model\ClassroomStudent.class
 pe\edu\vallegrande\msvstudents\application\service\StudentService.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\response\ClassroomStudentResponse.class

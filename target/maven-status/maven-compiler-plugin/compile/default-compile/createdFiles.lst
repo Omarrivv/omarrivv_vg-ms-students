@@ -4,6 +4,7 @@ pe\edu\vallegrande\msvstudents\infrastructure\dto\response\StudentResponse$Stude
 pe\edu\vallegrande\msvstudents\application\service\ClassroomStudentService.class
 pe\edu\vallegrande\msvstudents\application\service\impl\StudentServiceImpl.class
 pe\edu\vallegrande\msvstudents\domain\enums\DocumentType.class
+pe\edu\vallegrande\msvstudents\infrastructure\util\CsvUtils.class
 pe\edu\vallegrande\msvstudents\domain\model\Student.class
 pe\edu\vallegrande\msvstudents\domain\enums\Gender.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\response\StudentResponse.class

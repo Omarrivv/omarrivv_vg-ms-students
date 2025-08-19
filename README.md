@@ -48,12 +48,12 @@ MSV-STUDENTS MICROSERVICE
 │       │   │   ├── GET, POST, PUT, DELETE básicos
 │       │   │   ├── Filtros: /institution/{id}, /status/{status}
 │       │   │   ├── /gender/{gender}, /{id}/restore
-│       │   │   └── CORS habilitado para todos los orígenes
+│       │   │   └── Exportación CSV: /export (text/csv)
 │       │   └── ClassroomStudentController (/api/v1/classroom-students)
 │       │       ├── CRUD completo + restauración
 │       │       ├── Filtros: /student/{id}, /classroom/{id}
 │       │       ├── /year/{year}, /period/{period}
-│       │       └── /year/{year}/period/{period}
+│       │       └── Exportación CSV: /export (text/csv)
 │       │
 │       ├── 🗄️ Data Layer
 │       │   ├── MongoDB Reactive (Base de datos NoSQL)
@@ -182,6 +182,7 @@ src/main/java/pe/edu/vallegrande/msvstudents/
 | **PUT** | `/{id}` | Actualizar estudiante | 200, 404, 400 | Modificación de datos preservando estado |
 | **DELETE** | `/{id}` | Desactivar estudiante | 204, 404 | Eliminación lógica (soft delete) |
 | **PUT** | `/{id}/restore` | Restaurar estudiante | 200, 404 | Reactivación de registros inactivos |
+| **GET** | `/export` | Exportar estudiantes en CSV | 200 | Descarga `students.csv` |
 
 #### 🔍 Endpoints de Filtrado Avanzado
 
@@ -192,6 +193,18 @@ src/main/java/pe/edu/vallegrande/msvstudents/
 | **GET** | `/gender/{gender}` | Filtrar por género | 200 | Masculino (M) o Femenino (F) |
 
 #### 📝 Ejemplo de Estudiante (POST/PUT)
+
+#### 📤 Exportación CSV (Estudiantes)
+```http
+GET /api/v1/students/export HTTP/1.1
+Host: localhost:8081
+Accept: text/csv
+```
+
+Cabeceras de columnas:
+```
+id,institutionId,firstName,lastName,documentType,documentNumber,gender,birthDate,address,phone,email,nameQr,status
+```
 ```json
 {
     "institutionId": "1",
@@ -240,6 +253,7 @@ src/main/java/pe/edu/vallegrande/msvstudents/
 | **PUT** | `/{id}` | Actualizar matrícula | 200, 404, 400 | Modificación preservando fechas |
 | **DELETE** | `/{id}` | Desactivar matrícula | 204, 404 | Eliminación lógica |
 | **PUT** | `/{id}/restore` | Restaurar matrícula | 200, 404 | Reactivación de matrículas |
+| **GET** | `/export` | Exportar matrículas en CSV | 200 | Descarga `classroom-students.csv` |
 
 #### 🔍 Endpoints de Filtrado Especializado
 
@@ -253,6 +267,18 @@ src/main/java/pe/edu/vallegrande/msvstudents/
 | **GET** | `/year/{year}/period/{period}` | Filtro combinado | 200 | Consulta precisa año+período |
 
 #### 📝 Ejemplo de Matrícula (POST/PUT)
+
+#### 📤 Exportación CSV (Matrículas)
+```http
+GET /api/v1/classroom-students/export HTTP/1.1
+Host: localhost:8081
+Accept: text/csv
+```
+
+Cabeceras de columnas:
+```
+id,classroomId,studentId,enrollmentDate,enrollmentYear,enrollmentPeriod,status
+```
 ```json
 {
     "classroomId": "aula-001-2024",

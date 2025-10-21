@@ -2,7 +2,8 @@ package pe.edu.vallegrande.msvstudents.domain.enums;
 
 public enum Gender {
     MALE("M"),
-    FEMALE("F");
+    FEMALE("F"),
+    OTHER("O");
 
     private final String value;
 
@@ -13,4 +14,4 @@ public enum Gender {
     public String getValue() {
         return value;
     }
-} 
+}

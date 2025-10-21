@@ -1,103 +1,93 @@
 package pe.edu.vallegrande.msvstudents.infrastructure.rest;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import pe.edu.vallegrande.msvstudents.application.service.StudentService;
-import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.StudentRequest;
+import pe.edu.vallegrande.msvstudents.domain.enums.UserRole;
+import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.CreateStudentRequest;
+import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.UpdateStudentRequest;
+import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.ApiResponse;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.StudentResponse;
-import pe.edu.vallegrande.msvstudents.infrastructure.util.CsvUtils;
-import reactor.core.publisher.Flux;
+import pe.edu.vallegrande.msvstudents.infrastructure.security.HeaderValidator;
 import reactor.core.publisher.Mono;
+
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/students")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class StudentController {
 
     private final StudentService studentService;
 
-    @GetMapping
-    public Flux<StudentResponse> findAll() {
-        return studentService.findAll();
+    @PostMapping("/secretary/create")
+    public Mono<ApiResponse<Map<String, Object>>> createStudent(@Valid @RequestBody CreateStudentRequest request, ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = exchange.getAttributeOrDefault("validationResult", null);
+            if (headers == null) {
+                return Mono.error(new RuntimeException("Missing authentication headers (validationResult)."));
+            }
+            HeaderValidator.validateRole(headers, UserRole.SECRETARY);
+            return studentService.createStudent(request, headers.getInstitutionId())
+                    .map(studentResponse -> ApiResponse.success(Map.of("student", studentResponse), "Student created successfully"));
+        });
     }
 
-    @GetMapping("/{id}")
-    public Mono<StudentResponse> findById(@PathVariable String id) {
-        return studentService.findById(id);
+    @GetMapping("/secretary")
+    public Mono<ApiResponse<List<StudentResponse>>> getStudentsByInstitution(ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = exchange.getAttributeOrDefault("validationResult", null);
+            if (headers == null) {
+                return Mono.error(new RuntimeException("Missing authentication headers (validationResult)."));
+            }
+            HeaderValidator.validateRole(headers, UserRole.SECRETARY);
+            return studentService.getStudentsByInstitution(headers.getInstitutionId())
+                    .collectList()
+                    .map(studentResponses -> ApiResponse.success(studentResponses, "Students retrieved successfully"));
+        });
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Mono<StudentResponse> save(@RequestBody StudentRequest request) {
-        return studentService.save(request);
+    @PutMapping("/secretary/update/{studentId}")
+    public Mono<ApiResponse<Map<String, Object>>> updateStudent(@PathVariable String studentId, @Valid @RequestBody UpdateStudentRequest request, ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = exchange.getAttributeOrDefault("validationResult", null);
+            if (headers == null) {
+                return Mono.error(new RuntimeException("Missing authentication headers (validationResult)."));
+            }
+            HeaderValidator.validateRole(headers, UserRole.SECRETARY);
+            return studentService.updateStudent(studentId, request, headers.getInstitutionId())
+                    .map(studentResponse -> ApiResponse.success(Map.of("student", studentResponse), "Student updated successfully"));
+        });
     }
 
-    @PutMapping("/{id}")
-    public Mono<StudentResponse> update(@PathVariable String id, @RequestBody StudentRequest request) {
-        return studentService.update(id, request);
+    @GetMapping("/teacher/my-students")
+    public Mono<ApiResponse<List<StudentResponse>>> getMyStudents(ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = exchange.getAttributeOrDefault("validationResult", null);
+            if (headers == null) {
+                return Mono.error(new RuntimeException("Missing authentication headers (validationResult)."));
+            }
+            HeaderValidator.validateRole(headers, UserRole.TEACHER);
+            return studentService.getStudentsByTeacher(headers.getUserId(), headers.getInstitutionId())
+                    .collectList()
+                    .map(studentResponses -> ApiResponse.success(studentResponses, "My students retrieved successfully"));
+        });
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> delete(@PathVariable String id) {
-        return studentService.delete(id);
+    @GetMapping("/auxiliary")
+    public Mono<ApiResponse<List<StudentResponse>>> getStudentsAuxiliary(ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = exchange.getAttributeOrDefault("validationResult", null);
+            if (headers == null) {
+                return Mono.error(new RuntimeException("Missing authentication headers (validationResult)."));
+            }
+            HeaderValidator.validateRole(headers, UserRole.AUXILIARY);
+            return studentService.getStudentsByInstitution(headers.getInstitutionId())
+                    .collectList()
+                    .map(list -> ApiResponse.success(list, "Auxiliary students retrieved successfully"));
+        });
     }
-
-    @GetMapping("/institution/{institutionId}")
-    public Flux<StudentResponse> findByInstitutionId(@PathVariable String institutionId) {
-        return studentService.findByInstitutionId(institutionId);
-    }
-
-    @GetMapping("/status/{status}")
-    public Flux<StudentResponse> findByStatus(@PathVariable String status) {
-        return studentService.findByStatus(status);
-    }
-
-    @GetMapping("/gender/{gender}")
-    public Flux<StudentResponse> findByGender(@PathVariable String gender) {
-        return studentService.findByGender(gender);
-    }
-
-    @PutMapping("/{id}/restore")
-    public Mono<StudentResponse> restore(@PathVariable String id) {
-        return studentService.restore(id);
-    }
-
-    @GetMapping(value = "/export", produces = "text/csv")
-    public Mono<ResponseEntity<Flux<String>>> exportCsv() {
-        String header = CsvUtils.joinCsv(
-                "id", "institutionId", "firstName", "lastName",
-                "documentType", "documentNumber", "gender", "birthDate",
-                "address", "phone", "email", "nameQr", "status"
-        );
-
-        Flux<String> lines = studentService.findAll()
-                .map(s -> CsvUtils.joinCsv(
-                        s.getId(),
-                        s.getInstitutionId(),
-                        s.getFirstName(),
-                        s.getLastName(),
-                        s.getDocumentType(),
-                        s.getDocumentNumber(),
-                        s.getGender(),
-                        s.getBirthDate(),
-                        s.getAddress(),
-                        s.getPhone(),
-                        s.getEmail(),
-                        s.getNameQr(),
-                        s.getStatus()
-                ) + "\n");
-
-        Flux<String> body = Flux.concat(Flux.just(header + "\n"), lines);
-
-        return Mono.just(ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=students.csv")
-                .contentType(MediaType.valueOf("text/csv"))
-                .body(body));
-    }
-} 
+}

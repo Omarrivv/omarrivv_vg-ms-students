@@ -1,14 +1,18 @@
-# Usa una imagen base de OpenJDK 17
+# Imagen base OpenJDK 17 - Estándar PRS
 FROM openjdk:17-jdk-slim
 
-# Establece el directorio de trabajo en /app
+# Metadatos PRS
+LABEL service.name="vg-ms-students"
+LABEL service.version="1.0"
+
+# Directorio de trabajo
 WORKDIR /app
 
-# Copia el archivo JAR de la aplicación a la imagen
-COPY target/msv-students-0.0.1-SNAPSHOT.jar /app/app.jar
+# Copiar JAR siguiendo nomenclatura PRS
+COPY target/vg-ms-students-1.0.jar app.jar
 
-# Expone el puerto 8081 para que la aplicación sea accesible
-EXPOSE 8081
+# Exponer puerto usando variable PRS
+EXPOSE 8102
 
-# Comando para ejecutar la aplicación
+# Ejecutar aplicación
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

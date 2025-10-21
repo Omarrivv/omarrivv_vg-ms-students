@@ -1,13 +1,13 @@
 server:
-  port: 8081
+  port: ${PORT:8102}
 
 spring:
   application:
-    name: msv-students
+    name: vg-ms-students
   data:
     mongodb:
       uri: mongodb+srv://vallegrandeomar:oFnm1G368PeimZNj@cluster0.srr0s.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-      database: msv_students
+      database: vg_ms_students
 
 logging:
   level:

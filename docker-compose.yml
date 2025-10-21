@@ -1,0 +1,61 @@
+services:
+
+  faviohuaman19-vg-ms-user:
+    image: faviohuaman19/vg-ms-user:1.0
+    ports:
+      - "8100:8100" 
+    pull_policy: always
+    environment:
+      SERVER_PORT: 8100
+    networks:
+      - net-prs2
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.4
+
+  michaellibarra-vg-ms-institution:
+    image: michaellibarra/vg-ms-institution:latest
+    ports:
+      - "8101:8101" 
+    environment:
+      SERVER_PORT: 8101
+    networks:
+      - net-prs2
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.4
+
+  omarweb-vg-ms-students:
+    image: omarweb/vg-ms-students:1.0
+    environment:
+      SERVER_PORT: 8102
+    networks:
+      - net-prs2
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.4
+
+  cristopherguzman-vg-ms-grade-management:
+    image: cristopherguzman/vg-ms-grade-management:1.0
+    environment:
+      SERVER_PORT: 8104
+    networks:
+      - net-prs2
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.4
+
+  anthony563-vg-ms-attendance:
+    image: anthony563/vg-ms-attendance:1.0
+    environment:
+      SERVER_PORT: 8105
+    networks:
+      - net-prs2
+    mem_limit: 256m
+    mem_reservation: 128m
+    cpus: 0.4
+
+
+networks:
+  net-prs2:
+    driver: bridge

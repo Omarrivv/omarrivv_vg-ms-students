@@ -2,9 +2,8 @@ package pe.edu.vallegrande.msvstudents.domain.enums;
 
 public enum DocumentType {
     DNI("DNI"),
-    PASSPORT("PASAPORTE"),
-    FOREIGN_CARD("CARNET DE EXTRANJERIA"),
-    OTHERS("OTROS");
+    CE("CE"),
+    PASSPORT("PASSPORT");
 
     private final String value;
 

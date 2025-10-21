@@ -12,9 +12,9 @@
     </parent>
     
     <groupId>pe.edu.vallegrande</groupId>
-    <artifactId>msv-students</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>msv-students</name>
+    <artifactId>vg-ms-students</artifactId>
+    <version>1.0</version>
+    <name>vg-ms-students</name>
     <description>Microservicio de Estudiantes con Spring WebFlux y MongoDB</description>
     
     <properties>
@@ -55,6 +55,18 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
+        </dependency>
+
+        <!-- ZXing for QR code generation -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>3.5.2</version>
         </dependency>
         
         <!-- Test -->

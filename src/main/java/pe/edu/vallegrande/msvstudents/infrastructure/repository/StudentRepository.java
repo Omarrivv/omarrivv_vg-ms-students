@@ -5,11 +5,16 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface StudentRepository {
-    Flux<Student> findAll();
-    Mono<Student> findById(String id);
+
     Mono<Student> save(Student student);
-    Mono<Void> deleteById(String id);
+
+    Mono<Student> findById(String id);
+
     Flux<Student> findByInstitutionId(String institutionId);
-    Flux<Student> findByStatus(String status);
-    Flux<Student> findByGender(String gender);
-} 
+
+    Mono<Boolean> existsById(String studentId);
+
+    // Assuming this might be needed for validation
+    Mono<Student> findByDocumentNumberAndInstitutionId(String documentNumber, String institutionId);
+
+}

@@ -1,895 +1,1106 @@
-# 🎓 Microservicio de Estudiantes (MSV-Students)
+# 🎓 vg-ms-students - Microservicio de Gestión Estudiantil
+
+[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.java.net/projects/jdk/17/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![Spring WebFlux](https://img.shields.io/badge/Spring%20WebFlux-Reactive-blue.svg)](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Reactive-green.svg)](https://www.mongodb.com/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+
+---
 
 ## 📋 RESUMEN EJECUTIVO
 
-**MSV-STUDENTS** es un microservicio completo y moderno para la gestión académica estudiantil que implementa una arquitectura hexagonal con programación reactiva. Gestiona de manera integral la información académica estudiantil a través de dos entidades principales:
+**vg-ms-students** es un microservicio reactivo de alta performance que implementa las **Especificaciones PRS (Sistema de Estandarización)** para la gestión integral de estudiantes y sus matrículas académicas. Desarrollado con **arquitectura hexagonal** y **programación reactiva**, ofrece APIs REST completamente estandarizadas para el ciclo de vida completo de la gestión estudiantil.
 
-### 🎓 **ENTIDAD MAESTRO: Students**
-Maneja la información personal y académica de los estudiantes en instituciones educativas, incluyendo datos personales, demográficos, de contacto, estado del registro y código QR personalizado para identificación.
+### 🎯 **OBJETIVO PRINCIPAL**
+Proporcionar un sistema robusto y escalable para gestionar:
+- ✅ **Información completa de estudiantes** (personal, académica, apoderados)
+- ✅ **Matrículas por períodos académicos** con validaciones de negocio
+- ✅ **Historial académico integral** con trazabilidad completa
+- ✅ **Transferencias y promociones** entre períodos
+- ✅ **Reportes y consultas avanzadas** con filtros especializados
 
-### 📚 **ENTIDAD TRANSACCIONAL: Classroom-Students** 
-Gestiona las matrículas y relaciones entre estudiantes y aulas, incluyendo vinculación estudiante-aula específica, fechas de matrícula, períodos académicos, control de estado y validación de matrículas únicas activas por estudiante.
+---
+
+## 🏛️ ENTIDADES DEL SISTEMA
+
+### 👤 **ENTIDAD MAESTRO: Student**
+**Propósito:** Gestión integral de la información estudiantil personal, académica y de contacto.
+
+```java
+📋 CAMPOS PRINCIPALES:
+• id (UUID) - Identificador único del estudiante
+• firstName, lastName - Información personal
+• documentType, documentNumber - Identificación oficial (único nacional)
+• birthDate, gender - Datos demográficos
+• address, district, province, department - Ubicación geográfica
+• phone, email - Datos de contacto
+
+👨‍👩‍👧‍👦 INFORMACIÓN DEL APODERADO:
+• guardianName, guardianLastName - Datos del responsable
+• guardianDocumentType, guardianDocumentNumber - ID del apoderado
+• guardianPhone, guardianEmail - Contacto del apoderado
+• guardianRelationship - Relación familiar (FATHER, MOTHER, GUARDIAN, etc.)
+
+📊 METADATOS:
+• status - Estado del estudiante (ACTIVE, INACTIVE, TRANSFERRED, etc.)
+• createdAt, updatedAt - Auditoría temporal automática
+```
+
+### 📚 **ENTIDAD TRANSACCIONAL: StudentEnrollment**
+**Propósito:** Gestión de matrículas estudiantiles por período académico con validaciones de negocio.
+
+```java
+📋 CAMPOS PRINCIPALES:
+• id (UUID) - Identificador único de la matrícula
+• studentId - Referencia al estudiante (FK)
+• classroomId - Referencia al aula/período académico
+• enrollmentNumber - Código único de matrícula por período
+• enrollmentDate - Fecha de matrícula
+• status - Estado de la matrícula (ACTIVE, COMPLETED, TRANSFERRED, etc.)
+
+📊 METADATOS:
+• createdAt, updatedAt - Auditoría temporal automática
+```
+
+---
 
 ## 🗺️ MAPA CONCEPTUAL DETALLADO
 
 ```
-MSV-STUDENTS MICROSERVICE
-├── 🏗️ ARQUITECTURA HEXAGONAL
-│   ├── 📦 DOMAIN LAYER
-│   │   ├── 🏛️ Models
-│   │   │   ├── Student (Entidad Maestro)
-│   │   │   │   ├── id, institutionId, firstName, lastName
-│   │   │   │   ├── documentType, documentNumber, gender
-│   │   │   │   ├── birthDate, address, phone, email
-│   │   │   │   └── nameQr, status
-│   │   │   └── ClassroomStudent (Entidad Transaccional)
-│   │   │       ├── id, classroomId, studentId
-│   │   │       ├── enrollmentDate, enrollmentYear
-│   │   │       └── enrollmentPeriod, status
-│   │   └── 🏷️ Enums
-│   │       ├── DocumentType (DNI, PASSPORT, FOREIGN_CARD, OTHERS)
-│   │       ├── Gender (MALE, FEMALE)
-│   │       └── Status (ACTIVE, INACTIVE)
+🏗️ vg-ms-students MICROSERVICE ARCHITECTURE
+│
+├── 🌐 PRESENTATION LAYER (Infrastructure/REST)
+│   ├── 📡 StudentController (/api/v1/students)
+│   │   ├── ✅ CRUD Básico: GET, POST, PUT, DELETE
+│   │   ├── 🔍 Búsquedas: /document/{num}, /status/{status}, /gender/{gender}
+│   │   ├── 🔎 Filtros: /search/firstname/{name}, /search/lastname/{name}
+│   │   └── 📊 Respuestas: Estructura ApiResponse estandarizada PRS
 │   │
-│   ├── 🔧 APPLICATION LAYER
-│   │   └── 🎯 Services
-│   │       ├── StudentService (Lógica de negocio estudiantes)
-│   │       │   ├── CRUD básico + búsquedas especializadas
-│   │       │   ├── findByInstitutionId, findByStatus, findByGender
-│   │       │   └── Validaciones y reglas de negocio
-│   │       └── ClassroomStudentService (Lógica matrículas)
-│   │           ├── CRUD + filtros avanzados
-│   │           ├── findByYear, findByPeriod, findByStudentId
-│   │           └── Validación matrícula única activa
+│   └── 📡 StudentEnrollmentController (/api/v1/enrollments)
+│       ├── ✅ CRUD Básico: GET, POST, PUT, DELETE
+│       ├── 🔍 Búsquedas: /student/{id}, /classroom/{id}, /enrollment-number/{num}
+│       ├── 🔎 Filtros: /status/{status}
+│       └── 📊 Respuestas: Estructura ApiResponse estandarizada PRS
+│
+├── 🎯 APPLICATION LAYER (Business Logic)
+│   ├── 🧠 StudentService + StudentServiceImpl
+│   │   ├── 🔄 CRUD Operations con validaciones
+│   │   ├── 🔍 Búsquedas especializadas con ordenamiento
+│   │   ├── ✅ Validaciones de negocio (unicidad, formatos)
+│   │   └── 🔄 Transformación entre DTOs y Entities
 │   │
-│   └── 🌐 INFRASTRUCTURE LAYER
-│       ├── 🎮 REST Controllers
-│       │   ├── StudentController (/api/v1/students)
-│       │   │   ├── GET, POST, PUT, DELETE básicos
-│       │   │   ├── Filtros: /institution/{id}, /status/{status}
-│       │   │   ├── /gender/{gender}, /{id}/restore
-│       │   │   └── Exportación CSV: /export (text/csv)
-│       │   └── ClassroomStudentController (/api/v1/classroom-students)
-│       │       ├── CRUD completo + restauración
-│       │       ├── Filtros: /student/{id}, /classroom/{id}
-│       │       ├── /year/{year}, /period/{period}
-│       │       └── Exportación CSV: /export (text/csv)
-│       │
-│       ├── 🗄️ Data Layer
-│       │   ├── MongoDB Reactive (Base de datos NoSQL)
-│       │   ├── Repositories Interfaces + Implementaciones
-│       │   │   ├── StudentRepository (consultas estudiantes)
-│       │   │   └── ClassroomStudentRepository (consultas matrículas)
-│       │   └── Índices optimizados
-│       │       ├── students: documentNumber(unique), institutionId, status
-│       │       └── classroom_students: studentId, classroomId, status
-│       │
-│       ├── 📨 DTOs (Transferencia de datos)
-│       │   ├── Request DTOs (entrada de datos)
-│       │   │   ├── StudentRequest (creación/actualización estudiantes)
-│       │   │   └── ClassroomStudentRequest (matrículas)
-│       │   └── Response DTOs (salida de datos)
-│       │       ├── StudentResponse (respuesta estudiantes)
-│       │       └── ClassroomStudentResponse (respuesta matrículas)
-│       │
-│       ├── ⚙️ Configuration
-│       │   ├── MongoConfig (configuración base de datos)
-│       │   └── WebConfig (configuración web y CORS)
-│       │
-│       └── 🚨 Exception Handling
-│           ├── GlobalExceptionHandler (manejo centralizado)
-│           └── ResourceNotFoundException (entidades no encontradas)
+│   └── 🧠 StudentEnrollmentService + StudentEnrollmentServiceImpl
+│       ├── 🔄 CRUD Operations con validaciones
+│       ├── 🔍 Filtros avanzados por estudiante, aula, período
+│       ├── ✅ Validación de matrícula única activa por estudiante
+│       └── 🔄 Gestión de estados de matrícula
 │
-├── 🔧 STACK TECNOLÓGICO
-│   ├── ☕ Java 17 (Lenguaje principal)
-│   ├── 🌱 Spring Boot 2.7.0 (Framework base)
-│   ├── ⚡ Spring WebFlux (Programación reactiva)
-│   ├── 🗃️ Spring Data MongoDB Reactive (Persistencia)
-│   ├── 🎯 Project Reactor (Mono, Flux)
-│   ├── 🏗️ Lombok (Reducción boilerplate)
-│   ├── 📊 Spring Actuator (Monitoreo)
-│   └── 🧪 Reactor Test (Testing reactivo)
+├── 🏛️ DOMAIN LAYER (Core Business)
+│   ├── 📋 Models
+│   │   ├── 👤 Student (Entidad agregada raíz)
+│   │   └── 📚 StudentEnrollment (Entidad transaccional)
+│   │
+│   └── 🏷️ Enums
+│       ├── 📄 DocumentType (DNI, CE, PASSPORT)
+│       ├── ⚧️ Gender (MALE, FEMALE)
+│       ├── 📊 Status (ACTIVE, INACTIVE, TRANSFERRED, GRADUATED, DECEASED)
+│       ├── 👨‍👩‍👧‍👦 GuardianRelationship (FATHER, MOTHER, GUARDIAN, GRANDPARENT, OTHER)
+│       └── 📝 EnrollmentStatus (ACTIVE, COMPLETED, TRANSFERRED, WITHDRAWN, SUSPENDED)
 │
-├── 🚀 CARACTERÍSTICAS CLAVE
-│   ├── 🔄 Programación Reactiva (Non-blocking I/O)
-│   ├── 🏛️ Arquitectura Hexagonal (Clean Architecture)
-│   ├── 📱 RESTful APIs (Endpoints bien definidos)
-│   ├── 🌐 CORS habilitado (Integración frontend)
-│   ├── 🔍 Búsquedas especializadas (Múltiples criterios)
-│   ├── 🔒 Soft Delete (Eliminación lógica)
-│   ├── ♻️ Restauración de registros
-│   ├── ✅ Validaciones de negocio
-│   └── 📊 Índices optimizados MongoDB
-│
-└── 🎯 FUNCIONALIDADES PRINCIPALES
-    ├── 👥 Gestión Completa Estudiantes
-    │   ├── Registro con validación documento único
-    │   ├── Actualización información personal
-    │   ├── Búsquedas por institución, estado, género
-    │   └── Sistema de activación/desactivación
+└── 🗄️ INFRASTRUCTURE LAYER (Technical Details)
+    ├── 💾 Repositories (MongoDB Reactive)
+    │   ├── 👤 StudentRepository + StudentRepositoryImpl
+    │   └── 📚 StudentEnrollmentRepository + StudentEnrollmentRepositoryImpl
     │
-    ├── 📋 Gestión Matrículas Avanzada
-    │   ├── Matriculación automática con fecha
-    │   ├── Validación matrícula única activa
-    │   ├── Filtros por año académico y período
-    │   ├── Consultas por estudiante o aula
-    │   └── Control de estados de matrícula
+    ├── 📦 DTOs
+    │   ├── 📥 Requests (CreateStudentRequest, UpdateStudentRequest, CreateStudentEnrollmentRequest)
+    │   └── 📤 Responses (StudentResponse, StudentEnrollmentResponse, ApiResponse<T>)
     │
-    └── 📈 Capacidades de Consulta
-        ├── Filtros combinados (año + período)
-        ├── Búsquedas por múltiples criterios
-        ├── Paginación implícita con Flux
-        └── Respuestas reactivas optimizadas
+    ├── ⚙️ Configuration
+    │   ├── 🍃 MongoConfig (Configuración reactiva MongoDB)
+    │   └── 🌐 WebConfig (CORS y configuraciones web)
+    │
+    ├── 🚨 Exception Handling
+    │   ├── 🌍 GlobalExceptionHandler (Manejo centralizado de errores)
+    │   └── 🔍 ResourceNotFoundException (Excepciones de negocio)
+    │
+    └── 🛠️ Utils
+        ├── 🔄 StudentMapper (Conversión Entity ↔ DTO)
+        ├── 🔄 StudentEnrollmentMapper (Conversión Entity ↔ DTO)
+        └── 📊 CsvUtils (Exportación de datos)
 ```
+
+---
 
 ## 🏗️ ESTRUCTURA DEL PROYECTO
 
 ```
 src/main/java/pe/edu/vallegrande/msvstudents/
-├── MsvStudentsApplication.java          # 🚀 Punto de entrada Spring Boot
-├── application/                         # 🔧 Capa de aplicación
-│   └── service/                        # 🎯 Servicios de la aplicación
-│       ├── ClassroomStudentService     # 📚 Interfaz servicio matrículas
-│       ├── StudentService              # 🎓 Interfaz servicio estudiantes
-│       └── impl/                       # 🛠️ Implementaciones de servicios
-│           ├── ClassroomStudentServiceImpl  # 📋 Lógica negocio matrículas
-│           └── StudentServiceImpl           # 👥 Lógica negocio estudiantes
-├── domain/                             # 📦 Capa de dominio
-│   ├── enums/                         # 🏷️ Enumeraciones del dominio
-│   │   ├── DocumentType               # 📄 Tipos de documento
-│   │   ├── Gender                     # ⚧ Géneros
-│   │   └── Status                     # 🔘 Estados de registros
-│   └── model/                         # 🏛️ Modelos de dominio
-│       ├── ClassroomStudent           # 📚 Entidad de matrícula
-│       └── Student                    # 🎓 Entidad de estudiante
-└── infrastructure/                     # 🌐 Capa de infraestructura
-    ├── config/                        # ⚙️ Configuraciones
-    │   ├── MongoConfig                # 🗃️ Configuración MongoDB
-    │   └── WebConfig                  # 🌐 Configuración CORS y Web
-    ├── dto/                          # 📨 Objetos transferencia de datos
-    │   ├── request/                  # 📥 DTOs para peticiones
-    │   │   ├── ClassroomStudentRequest # 📚 Request matrículas
-    │   │   └── StudentRequest         # 🎓 Request estudiantes
-    │   └── response/                 # 📤 DTOs para respuestas
-    │       ├── ClassroomStudentResponse # 📚 Response matrículas
-    │       └── StudentResponse        # 🎓 Response estudiantes
-    ├── exception/                    # 🚨 Manejo de excepciones
-    │   ├── GlobalExceptionHandler    # 🌐 Manejador global excepciones
-    │   └── ResourceNotFoundException # 🔍 Excepción recurso no encontrado
-    ├── repository/                   # 🗄️ Repositorios
-    │   ├── ClassroomStudentRepository # 📚 Interfaz repo matrículas
-    │   ├── StudentRepository         # 🎓 Interfaz repo estudiantes
-    │   └── impl/                     # 🛠️ Implementaciones repositorios
-    │       ├── ClassroomStudentRepositoryImpl # 📋 Impl repo matrículas
-    │       └── StudentRepositoryImpl          # 👥 Impl repo estudiantes
-    └── rest/                         # 🎮 Controladores REST
-        ├── ClassroomStudentController # 📚 API matrículas
-        └── StudentController         # 🎓 API estudiantes
+│
+├── 🚀 MsvStudentsApplication.java (Punto de entrada Spring Boot)
+│
+├── 🏛️ domain/
+│   ├── 📋 model/
+│   │   ├── 👤 Student.java ✅ (Entidad principal)
+│   │   └── 📚 StudentEnrollment.java ✅ (Entidad transaccional)
+│   │
+│   └── 🏷️ enums/
+│       ├── 📄 DocumentType.java ✅ (DNI, CE, PASSPORT)
+│       ├── ⚧️ Gender.java ✅ (MALE, FEMALE)
+│       ├── 📊 Status.java ✅ (Estados del estudiante)
+│       ├── 👨‍👩‍👧‍👦 GuardianRelationship.java ✅ (Relaciones familiares)
+│       └── 📝 EnrollmentStatus.java ✅ (Estados de matrícula)
+│
+├── 🎯 application/service/
+│   ├── 👤 StudentService.java ✅ (Interfaz de servicio)
+│   ├── 📚 StudentEnrollmentService.java ✅ (Interfaz de servicio)
+│   └── impl/
+│       ├── 👤 StudentServiceImpl.java ✅ (Lógica de negocio)
+│       └── 📚 StudentEnrollmentServiceImpl.java ✅ (Lógica de negocio)
+│
+└── 🌐 infrastructure/
+    ├── 📦 dto/
+    │   ├── 📥 request/
+    │   │   ├── CreateStudentRequest.java ✅
+    │   │   ├── UpdateStudentRequest.java ✅
+    │   │   ├── StudentRequest.java ✅
+    │   │   └── CreateStudentEnrollmentRequest.java ✅
+    │   │
+    │   └── 📤 response/
+    │       ├── ApiResponse.java ✅ (Estructura PRS)
+    │       ├── StudentResponse.java ✅
+    │       └── StudentEnrollmentResponse.java ✅
+    │
+    ├── 💾 repository/
+    │   ├── StudentRepository.java ✅ (Interfaz reactiva)
+    │   ├── StudentEnrollmentRepository.java ✅ (Interfaz reactiva)
+    │   └── impl/
+    │       ├── StudentRepositoryImpl.java ✅ (MongoDB reactivo)
+    │       └── StudentEnrollmentRepositoryImpl.java ✅ (MongoDB reactivo)
+    │
+    ├── 📡 rest/
+    │   ├── StudentController.java ✅ (API REST estudiantes)
+    │   └── StudentEnrollmentController.java ✅ (API REST matrículas)
+    │
+    ├── 🚨 exception/
+    │   ├── GlobalExceptionHandler.java ✅
+    │   └── ResourceNotFoundException.java ✅
+    │
+    ├── 🛠️ util/
+    │   ├── StudentMapper.java ✅
+    │   ├── StudentEnrollmentMapper.java ✅
+    │   └── CsvUtils.java ✅
+    │
+    └── ⚙️ config/
+        ├── MongoConfig.java ✅
+        └── WebConfig.java ✅
+
+src/main/resources/
+├── 📋 application.yml ✅ (Configuración Spring)
+└── 🗄️ db/
+    └── init-mongo.js ✅ (Scripts de inicialización)
 ```
+
+---
 
 ## 📖 DOCUMENTACIÓN COMPLETA DE API
 
-### 🎓 API de Estudiantes
-**Base URL:** `/api/v1/students`
+### 🌍 **BASE URL**
+```
+http://localhost:8102/api/v1
+```
 
-#### 🔧 Endpoints Principales
+### 📊 **ESTRUCTURA DE RESPUESTA ESTÁNDAR PRS**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Descripción del resultado",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    // Datos de respuesta aquí
+  }
+}
+```
 
-| Método | Endpoint | Descripción | Códigos de Respuesta | Funcionalidad |
-|--------|----------|-------------|---------------------|---------------|
-| **GET** | `/` | Obtener todos los estudiantes | 200 | Lista completa de estudiantes activos e inactivos |
-| **GET** | `/{id}` | Obtener estudiante por ID | 200, 404 | Búsqueda individual por identificador único |
-| **POST** | `/` | Crear nuevo estudiante | 201, 400 | Registro con validación de documento único |
-| **PUT** | `/{id}` | Actualizar estudiante | 200, 404, 400 | Modificación de datos preservando estado |
-| **DELETE** | `/{id}` | Desactivar estudiante | 204, 404 | Eliminación lógica (soft delete) |
-| **PUT** | `/{id}/restore` | Restaurar estudiante | 200, 404 | Reactivación de registros inactivos |
-| **GET** | `/export` | Exportar estudiantes en CSV | 200 | Descarga `students.csv` |
+---
 
-#### 🔍 Endpoints de Filtrado Avanzado
+## 👤 API ESTUDIANTES (/api/v1/students)
 
-| Método | Endpoint | Descripción | Códigos | Casos de Uso |
-|--------|----------|-------------|---------|--------------|
-| **GET** | `/institution/{institutionId}` | Filtrar por institución | 200 | Estudiantes por centro educativo |
-| **GET** | `/status/{status}` | Filtrar por estado | 200 | Activos (A) o Inactivos (I) |
-| **GET** | `/gender/{gender}` | Filtrar por género | 200 | Masculino (M) o Femenino (F) |
-
-#### 📝 Ejemplo de Estudiante (POST/PUT)
-
-#### 📤 Exportación CSV (Estudiantes)
+### 📋 **1. OBTENER TODOS LOS ESTUDIANTES**
 ```http
-GET /api/v1/students/export HTTP/1.1
-Host: localhost:8081
-Accept: text/csv
+GET /api/v1/students
 ```
 
-Cabeceras de columnas:
-```
-id,institutionId,firstName,lastName,documentType,documentNumber,gender,birthDate,address,phone,email,nameQr,status
-```
+**📤 Respuesta:**
 ```json
 {
-    "institutionId": "1",
-    "firstName": "Omar Code",
-    "lastName": "Rivera Rosas",
-    "documentType": "DNI",
-    "documentNumber": "12345678",
-    "gender": "M",
-    "birthDate": "2005-03-15",
-    "address": "Av. Los Jardines 123, Lima",
-    "phone": "987654321",
-    "email": "omar.rivera@example.com",
-    "nameQr": "Omar_Code_Rivera_Rosas_12345678"
+  "metadata": {
+    "status": 200,
+    "message": "Students retrieved successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "firstName": "Juan Carlos",
+      "lastName": "González Pérez",
+      "documentType": "DNI",
+      "documentNumber": "78901234",
+      "birthDate": "2010-03-15",
+      "gender": "MALE",
+      "address": "Jr. Los Pinos 123",
+      "district": "Lima",
+      "province": "Lima",
+      "department": "Lima",
+      "phone": "912345678",
+      "email": "juan.gonzalez@email.com",
+      "guardianName": "Carlos",
+      "guardianLastName": "González",
+      "guardianDocumentType": "DNI",
+      "guardianDocumentNumber": "12345678",
+      "guardianPhone": "987654321",
+      "guardianEmail": "carlos.gonzalez@email.com",
+      "guardianRelationship": "FATHER",
+      "status": "ACTIVE",
+      "createdAt": "2025-09-06T18:30:00.123456",
+      "updatedAt": "2025-09-06T18:30:00.123456"
+    }
+  ]
 }
 ```
 
-#### 📤 Ejemplo de Respuesta (StudentResponse)
-```json
-{
-    "id": "674a1b2c3d4e5f6789abcdef",
-    "institutionId": "1",
-    "firstName": "Omar Code",
-    "lastName": "Rivera Rosas",
-    "documentType": "DNI",
-    "documentNumber": "12345678",
-    "gender": "M",
-    "birthDate": "2005-03-15",
-    "address": "Av. Los Jardines 123, Lima",
-    "phone": "987654321",
-    "email": "omar.rivera@example.com",
-    "nameQr": "Omar_Code_Rivera_Rosas_12345678",
-    "status": "A"
-}
-```
-
-### 📚 API de Matrículas (Classroom-Students)
-**Base URL:** `/api/v1/classroom-students`
-
-#### 🔧 Endpoints Principales
-
-| Método | Endpoint | Descripción | Códigos de Respuesta | Funcionalidad |
-|--------|----------|-------------|---------------------|---------------|
-| **GET** | `/` | Obtener todas las matrículas | 200 | Lista completa de matrículas |
-| **GET** | `/{id}` | Obtener matrícula por ID | 200, 404 | Búsqueda individual de matrícula |
-| **POST** | `/` | Crear nueva matrícula | 201, 400 | Registro con validación única activa |
-| **PUT** | `/{id}` | Actualizar matrícula | 200, 404, 400 | Modificación preservando fechas |
-| **DELETE** | `/{id}` | Desactivar matrícula | 204, 404 | Eliminación lógica |
-| **PUT** | `/{id}/restore` | Restaurar matrícula | 200, 404 | Reactivación de matrículas |
-| **GET** | `/export` | Exportar matrículas en CSV | 200 | Descarga `classroom-students.csv` |
-
-#### 🔍 Endpoints de Filtrado Especializado
-
-| Método | Endpoint | Descripción | Códigos | Casos de Uso |
-|--------|----------|-------------|---------|--------------|
-| **GET** | `/student/{studentId}` | Matrículas por estudiante | 200 | Historial académico completo |
-| **GET** | `/classroom/{classroomId}` | Matrículas por aula | 200 | Lista de clase específica |
-| **GET** | `/status/{status}` | Filtrar por estado | 200 | Matrículas activas/inactivas |
-| **GET** | `/year/{year}` | Filtrar por año académico | 200 | Año específico (ej: "2024") |
-| **GET** | `/period/{period}` | Filtrar por período | 200 | Período específico (ej: "2024-1") |
-| **GET** | `/year/{year}/period/{period}` | Filtro combinado | 200 | Consulta precisa año+período |
-
-#### 📝 Ejemplo de Matrícula (POST/PUT)
-
-#### 📤 Exportación CSV (Matrículas)
+### 🔍 **2. OBTENER ESTUDIANTE POR ID**
 ```http
-GET /api/v1/classroom-students/export HTTP/1.1
-Host: localhost:8081
-Accept: text/csv
+GET /api/v1/students/{id}
 ```
 
-Cabeceras de columnas:
-```
-id,classroomId,studentId,enrollmentDate,enrollmentYear,enrollmentPeriod,status
-```
+**📤 Respuesta Exitosa:**
 ```json
 {
-    "classroomId": "aula-001-2024",
-    "studentId": "674a1b2c3d4e5f6789abcdef",
-    "enrollmentYear": "2024",
-    "enrollmentPeriod": "2024-1"
+  "metadata": {
+    "status": 200,
+    "message": "Student retrieved successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "firstName": "Ana María",
+    "lastName": "López García",
+    // ... resto de campos del estudiante
+  }
 }
 ```
 
-#### 📤 Ejemplo de Respuesta (ClassroomStudentResponse)
+**❌ Respuesta Error (No encontrado):**
 ```json
 {
-    "id": "674b2c3d4e5f6789abcdef01",
-    "classroomId": "aula-001-2024",
-    "studentId": "674a1b2c3d4e5f6789abcdef",
-    "enrollmentDate": "2024-07-24",
-    "enrollmentYear": "2024",
-    "enrollmentPeriod": "2024-1",
-    "status": "A"
-}
-```
-
-### 🎯 Valores y Constantes Permitidos
-
-#### 🔘 Estados (Status)
-| Código | Descripción | Uso |
-|--------|-------------|-----|
-| `A` | Activo | Registro operativo |
-| `I` | Inactivo | Registro eliminado lógicamente |
-
-#### ⚧ Géneros (Gender)
-| Código | Descripción | Enum |
-|--------|-------------|------|
-| `M` | Masculino | MALE |
-| `F` | Femenino | FEMALE |
-
-#### 📄 Tipos de Documento (DocumentType)
-| Código | Descripción | Enum |
-|--------|-------------|------|
-| `DNI` | Documento Nacional de Identidad | DNI |
-| `PASAPORTE` | Pasaporte | PASSPORT |
-| `CARNET DE EXTRANJERIA` | Carnet de Extranjería | FOREIGN_CARD |
-| `OTROS` | Otros tipos de documento | OTHERS |
-
-### 🚨 Respuestas de Error Estructuradas
-
-#### ❌ Error 404 - Recurso no encontrado
-```json
-{
-    "timestamp": "2024-07-24T10:30:00Z",
+  "metadata": {
     "status": 404,
-    "error": "Not Found",
-    "message": "Estudiante no encontrado con ID: 674a1b2c3d4e5f6789abcdef",
-    "path": "/api/v1/students/674a1b2c3d4e5f6789abcdef"
+    "message": "Student not found with ID: invalid-id",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": null
 }
 ```
 
-#### ⚠️ Error 400 - Validación de datos
-```json
-{
-    "timestamp": "2024-07-24T10:30:00Z",
-    "status": 400,
-    "error": "Bad Request",
-    "message": "Error de validación en los datos enviados",
-    "validationErrors": {
-        "firstName": "El nombre es requerido",
-        "documentNumber": "El número de documento debe tener 8 dígitos",
-        "email": "Formato de email inválido"
-    },
-    "path": "/api/v1/students"
-}
-```
-
-#### 🔄 Error 409 - Conflicto de negocio
-```json
-{
-    "timestamp": "2024-07-24T10:30:00Z",
-    "status": 409,
-    "error": "Conflict",
-    "message": "El estudiante ya tiene una matrícula activa",
-    "details": "Solo se permite una matrícula activa por estudiante",
-    "path": "/api/v1/classroom-students"
-}
-```
-
-#### 💥 Error 500 - Error interno del servidor
-```json
-{
-    "timestamp": "2024-07-24T10:30:00Z",
-    "status": 500,
-    "error": "Internal Server Error",
-    "message": "Error interno del servidor. Contacte al administrador.",
-    "path": "/api/v1/students"
-}
-```
-
-### ⚠️ Reglas de Negocio Importantes
-
-#### 🎓 Estudiantes
-1. **Documento Único**: El número de documento debe ser único en el sistema
-2. **Validación de Email**: Debe cumplir formato estándar de email
-3. **Eliminación Lógica**: DELETE cambia estado a 'I', no elimina físicamente
-4. **Restauración**: Se puede reactivar estudiantes inactivos
-5. **Código QR**: Se genera automáticamente al crear el estudiante
-
-#### 📚 Matrículas
-1. **Matrícula Única Activa**: Un estudiante solo puede tener una matrícula activa
-2. **Fecha Automática**: La fecha de matrícula se establece automáticamente
-3. **Validación de Referencias**: StudentId y ClassroomId deben existir
-4. **Períodos Académicos**: Formato recomendado "YYYY-N" (ej: "2024-1")
-5. **Control de Estados**: Se mantiene trazabilidad de cambios de estado
-
-### 🌐 Configuración CORS
-
-El microservicio permite solicitudes desde cualquier origen con la siguiente configuración:
-
-```yaml
-cors:
-  allowed-origins: "*"
-  allowed-methods: GET, POST, PUT, DELETE, OPTIONS
-  allowed-headers: "*"
-  allow-credentials: false
-  max-age: 3600
-```
-
-### 🔧 Headers Recomendados
-
+### ➕ **3. CREAR ESTUDIANTE**
 ```http
+POST /api/v1/students
 Content-Type: application/json
-Accept: application/json
-X-Requested-With: XMLHttpRequest
 ```
 
-## 📊 MODELOS DE DATOS DETALLADOS
-
-### 🎓 StudentRequest (Entrada)
+**📥 Request Body:**
 ```json
 {
-    "institutionId": "1",                    // 🏫 ID de la institución educativa
-    "firstName": "string",                   // 👤 Primer nombre (requerido)
-    "lastName": "string",                    // 👤 Apellidos (requerido)
-    "documentType": "DNI",                   // 📄 Tipo: DNI|PASAPORTE|CARNET DE EXTRANJERIA|OTROS
-    "documentNumber": "12345678",            // 🔢 Número único de documento (8 dígitos para DNI)
-    "gender": "M",                          // ⚧ Género: M (Masculino) | F (Femenino)
-    "birthDate": "2005-03-15",              // 📅 Fecha nacimiento (YYYY-MM-DD)
-    "address": "Av. Los Jardines 123",       // 🏠 Dirección completa
-    "phone": "987654321",                    // 📞 Teléfono (9 dígitos)
-    "email": "estudiante@example.com",       // 📧 Email válido
-    "nameQr": "Primer_Apellido_DocNum"       // 🏷️ Código QR personalizado
+  "firstName": "Ana María",
+  "lastName": "López García",
+  "documentType": "DNI",
+  "documentNumber": "87654321",
+  "birthDate": "2010-05-15",
+  "gender": "FEMALE",
+  "address": "Av. Principal 123",
+  "district": "Lima",
+  "province": "Lima",
+  "department": "Lima",
+  "phone": "987654321",
+  "email": "ana.lopez@email.com",
+  "guardianName": "Carlos",
+  "guardianLastName": "López",
+  "guardianDocumentType": "DNI",
+  "guardianDocumentNumber": "12345678",
+  "guardianPhone": "987654321",
+  "guardianEmail": "carlos.lopez@email.com",
+  "guardianRelationship": "FATHER"
 }
 ```
 
-### 🎓 StudentResponse (Salida)
+**📤 Respuesta Exitosa:**
 ```json
 {
-    "id": "674a1b2c3d4e5f6789abcdef",        // 🆔 ID único generado automáticamente
-    "institutionId": "1",                    // 🏫 ID de la institución
-    "firstName": "Omar Code",                // 👤 Primer nombre
-    "lastName": "Rivera Rosas",              // 👤 Apellidos
-    "documentType": "DNI",                   // 📄 Tipo de documento
-    "documentNumber": "12345678",            // 🔢 Número de documento
-    "gender": "M",                          // ⚧ Género
-    "birthDate": "2005-03-15",              // 📅 Fecha de nacimiento
-    "address": "Av. Los Jardines 123, Lima", // 🏠 Dirección
-    "phone": "987654321",                    // 📞 Teléfono
-    "email": "omar.rivera@example.com",      // 📧 Email
-    "nameQr": "Omar_Code_Rivera_Rosas_12345678", // 🏷️ Código QR
-    "status": "A"                           // 🔘 Estado: A (Activo) | I (Inactivo)
+  "metadata": {
+    "status": 201,
+    "message": "Student created successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    "id": "nuevo-uuid-generado",
+    "firstName": "Ana María",
+    "lastName": "López García",
+    "documentType": "DNI",
+    "documentNumber": "87654321",
+    "birthDate": "2010-05-15",
+    "gender": "FEMALE",
+    "address": "Av. Principal 123",
+    "district": "Lima",
+    "province": "Lima",
+    "department": "Lima",
+    "phone": "987654321",
+    "email": "ana.lopez@email.com",
+    "guardianName": "Carlos",
+    "guardianLastName": "López",
+    "guardianDocumentType": "DNI",
+    "guardianDocumentNumber": "12345678",
+    "guardianPhone": "987654321",
+    "guardianEmail": "carlos.lopez@email.com",
+    "guardianRelationship": "FATHER",
+    "status": "ACTIVE",
+    "createdAt": "2025-09-06T18:45:30.123456",
+    "updatedAt": "2025-09-06T18:45:30.123456"
+  }
 }
 ```
 
-### 📚 ClassroomStudentRequest (Entrada)
+**❌ Respuesta Error (Validación):**
 ```json
 {
-    "classroomId": "aula-001-2024",          // 🏫 ID del aula o clase
-    "studentId": "674a1b2c3d4e5f6789abcdef", // 🎓 ID del estudiante (debe existir)
-    "enrollmentYear": "2024",                // 📅 Año académico
-    "enrollmentPeriod": "2024-1"             // 📅 Período académico (formato YYYY-N)
+  "metadata": {
+    "status": 400,
+    "message": "Validation failed",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    "errors": [
+      {
+        "field": "firstName",
+        "message": "First name is required"
+      },
+      {
+        "field": "documentNumber",
+        "message": "Document number is required"
+      }
+    ]
+  }
 }
 ```
 
-### 📚 ClassroomStudentResponse (Salida)
-```json
-{
-    "id": "674b2c3d4e5f6789abcdef01",        // 🆔 ID único de la matrícula
-    "classroomId": "aula-001-2024",          // 🏫 ID del aula
-    "studentId": "674a1b2c3d4e5f6789abcdef", // 🎓 ID del estudiante
-    "enrollmentDate": "2024-07-24",          // 📅 Fecha matrícula (auto-generada)
-    "enrollmentYear": "2024",                // 📅 Año académico
-    "enrollmentPeriod": "2024-1",            // 📅 Período académico
-    "status": "A"                           // 🔘 Estado: A (Activo) | I (Inactivo)
-}
-```
-
-## 🏷️ ENUMERACIONES Y CONSTANTES
-
-### 📄 DocumentType (Tipos de Documento)
-```java
-public enum DocumentType {
-    DNI("DNI"),                             // 🇵🇪 Documento Nacional de Identidad
-    PASSPORT("PASAPORTE"),                  // 🛂 Pasaporte internacional
-    FOREIGN_CARD("CARNET DE EXTRANJERIA"),  // 🌍 Carnet de extranjería
-    OTHERS("OTROS")                         // 📋 Otros tipos de documento
-}
-```
-
-### ⚧ Gender (Géneros)
-```java
-public enum Gender {
-    MALE("M"),      // 👨 Masculino
-    FEMALE("F")     // 👩 Femenino
-}
-```
-
-### 🔘 Status (Estados)
-```java
-public enum Status {
-    ACTIVE("A"),    // ✅ Registro activo y operativo
-    INACTIVE("I")   // ❌ Registro inactivo (eliminación lógica)
-}
-```
-
-## 🔧 STACK TECNOLÓGICO COMPLETO
-
-### ⚡ Tecnologías Core
-- **☕ Java 17**: Lenguaje de programación principal con características modernas
-- **🌱 Spring Boot 2.7.0**: Framework de aplicación con configuración automática
-- **⚡ Spring WebFlux**: Programación reactiva no-bloqueante
-- **🗃️ Spring Data MongoDB Reactive**: Acceso reactivo a MongoDB
-- **🎯 Project Reactor**: Librería reactiva (Mono, Flux)
-
-### 🛠️ Herramientas de Desarrollo
-- **🏗️ Lombok**: Reducción de código boilerplate con anotaciones
-- **📊 Spring Boot Actuator**: Endpoints de monitoreo y métricas
-- **🧪 Reactor Test**: Testing para componentes reactivos
-- **☢️ Maven**: Gestión de dependencias y construcción
-
-### 🗄️ Base de Datos
-- **🍃 MongoDB**: Base de datos NoSQL orientada a documentos
-- **📊 Índices Optimizados**: Para consultas eficientes
-- **🔄 Conexión Reactiva**: Pool de conexiones no-bloqueante
-
-## 📈 CARACTERÍSTICAS TÉCNICAS AVANZADAS
-
-### 🔄 Programación Reactiva
-- **Non-blocking I/O**: Operaciones asíncronas de alta performance
-- **Backpressure**: Control de flujo automático
-- **Event Loop**: Procesamiento eficiente de eventos
-- **Streaming**: Procesamiento de datos en tiempo real
-
-### 🏛️ Arquitectura Hexagonal
-- **Separación de Concerns**: Capas bien definidas
-- **Inversión de Dependencias**: Interfaces como contratos
-- **Testabilidad**: Fácil testing unitario e integración
-- **Mantenibilidad**: Código limpio y escalable
-
-### 🚀 Optimizaciones de Performance
-- **Índices MongoDB**: Consultas optimizadas
-- **Connection Pooling**: Reutilización de conexiones
-- **Lazy Loading**: Carga bajo demanda
-- **Caching**: Almacenamiento en memoria (donde aplicable)
-
-## 🔒 SEGURIDAD Y VALIDACIONES
-
-### ✅ Validaciones de Negocio
-- **Documento Único**: Prevención de duplicados
-- **Email Format**: Validación de formato correcto
-- **Matrícula Única**: Solo una matrícula activa por estudiante
-- **Referencias Válidas**: Validación de IDs existentes
-
-### 🛡️ Manejo de Errores
-- **Global Exception Handler**: Manejo centralizado
-- **Response Unificado**: Estructura consistente de errores
-- **Logging**: Trazabilidad completa de errores
-- **Códigos HTTP**: Respuestas semánticamente correctas
-
-## 🌐 CONFIGURACIÓN DE INTEGRACIÓN
-
-### 🌍 CORS (Cross-Origin Resource Sharing)
-```yaml
-cors:
-  allowed-origins: "*"                    # ✅ Todos los orígenes permitidos
-  allowed-methods: 
-    - GET
-    - POST  
-    - PUT
-    - DELETE
-    - OPTIONS
-  allowed-headers: "*"                    # ✅ Todos los headers permitidos
-  allow-credentials: false                # 🔒 Sin credenciales por defecto
-  max-age: 3600                          # ⏱️ Cache preflight 1 hora
-```
-
-### 📡 Headers HTTP Recomendados
+### ✏️ **4. ACTUALIZAR ESTUDIANTE**
 ```http
-Content-Type: application/json          # 📋 Tipo de contenido JSON
-Accept: application/json                # 📥 Acepta respuestas JSON
-X-Requested-With: XMLHttpRequest        # 🌐 Identificador AJAX
-Authorization: Bearer <token>           # 🔐 Token de autorización (futuro)
+PUT /api/v1/students/{id}
+Content-Type: application/json
 ```
 
-### 🔗 Configuración MongoDB
+**📥 Request Body:**
+```json
+{
+  "firstName": "Ana María Actualizada",
+  "lastName": "López García",
+  "documentType": "DNI",
+  "documentNumber": "87654321",
+  "birthDate": "2010-05-15",
+  "gender": "FEMALE",
+  "address": "Nueva Dirección 456",
+  "district": "Callao",
+  "province": "Callao",
+  "department": "Lima",
+  "phone": "987654322",
+  "email": "ana.lopez.updated@email.com",
+  "guardianName": "Carlos",
+  "guardianLastName": "López",
+  "guardianDocumentType": "DNI",
+  "guardianDocumentNumber": "12345678",
+  "guardianPhone": "987654321",
+  "guardianEmail": "carlos.lopez@email.com",
+  "guardianRelationship": "FATHER"
+}
+```
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Student updated successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "firstName": "Ana María Actualizada",
+    "lastName": "López García",
+    // ... resto de campos actualizados
+    "updatedAt": "2025-09-06T18:45:30.123456"
+  }
+}
+```
+
+### 🗑️ **5. ELIMINAR ESTUDIANTE (Lógico)**
+```http
+DELETE /api/v1/students/{id}
+```
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 204,
+    "message": "Student deleted successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": null
+}
+```
+
+### 🔍 **6. BUSCAR POR NÚMERO DE DOCUMENTO**
+```http
+GET /api/v1/students/document/{documentNumber}
+```
+
+**Ejemplo:** `GET /api/v1/students/document/78901234`
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Student retrieved successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "firstName": "Juan Carlos",
+    "lastName": "González Pérez",
+    "documentNumber": "78901234",
+    // ... resto de campos
+  }
+}
+```
+
+### 🔍 **7. FILTRAR POR STATUS**
+```http
+GET /api/v1/students/status/{status}
+```
+
+**Valores permitidos:** `ACTIVE`, `INACTIVE`, `TRANSFERRED`, `GRADUATED`, `DECEASED`
+
+**Ejemplo:** `GET /api/v1/students/status/ACTIVE`
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Students retrieved by status successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": [
+    {
+      "id": "uuid-1",
+      "firstName": "Juan Carlos",
+      "status": "ACTIVE",
+      // ... resto de campos
+    },
+    {
+      "id": "uuid-2",
+      "firstName": "Ana María",
+      "status": "ACTIVE",
+      // ... resto de campos
+    }
+  ]
+}
+```
+
+### 🔍 **8. FILTRAR POR GÉNERO**
+```http
+GET /api/v1/students/gender/{gender}
+```
+
+**Valores permitidos:** `MALE`, `FEMALE`
+
+**Ejemplo:** `GET /api/v1/students/gender/FEMALE`
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Students retrieved by gender successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": [
+    {
+      "id": "uuid-1",
+      "firstName": "Ana María",
+      "gender": "FEMALE",
+      // ... resto de campos
+    }
+  ]
+}
+```
+
+### 🔍 **9. BUSCAR POR NOMBRE**
+```http
+GET /api/v1/students/search/firstname/{firstName}
+```
+
+**Ejemplo:** `GET /api/v1/students/search/firstname/Juan`
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Students retrieved by first name successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": [
+    {
+      "id": "uuid-1",
+      "firstName": "Juan Carlos",
+      // ... resto de campos
+    }
+  ]
+}
+```
+
+### 🔍 **10. BUSCAR POR APELLIDO**
+```http
+GET /api/v1/students/search/lastname/{lastName}
+```
+
+**Ejemplo:** `GET /api/v1/students/search/lastname/González`
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Students retrieved by last name successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": [
+    {
+      "id": "uuid-1",
+      "firstName": "Juan Carlos",
+      "lastName": "González Pérez",
+      // ... resto de campos
+    }
+  ]
+}
+```
+
+---
+
+## 📚 API MATRÍCULAS (/api/v1/enrollments)
+
+### 📋 **1. OBTENER TODAS LAS MATRÍCULAS**
+```http
+GET /api/v1/enrollments
+```
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Student enrollments retrieved successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": [
+    {
+      "id": "enrollment-uuid-1",
+      "studentId": "student-uuid-1",
+      "classroomId": "classroom-2024-001",
+      "enrollmentNumber": "ENR-2024-001",
+      "enrollmentDate": "2024-03-01",
+      "status": "ACTIVE",
+      "createdAt": "2024-03-01T08:00:00.000000",
+      "updatedAt": "2024-03-01T08:00:00.000000"
+    },
+    {
+      "id": "enrollment-uuid-2",
+      "studentId": "student-uuid-2",
+      "classroomId": "classroom-2024-002",
+      "enrollmentNumber": "ENR-2024-002",
+      "enrollmentDate": "2024-03-01",
+      "status": "COMPLETED",
+      "createdAt": "2024-03-01T08:00:00.000000",
+      "updatedAt": "2024-12-15T15:30:00.000000"
+    }
+  ]
+}
+```
+
+### 🔍 **2. OBTENER MATRÍCULA POR ID**
+```http
+GET /api/v1/enrollments/{id}
+```
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Student enrollment retrieved successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    "id": "enrollment-uuid-1",
+    "studentId": "student-uuid-1",
+    "classroomId": "classroom-2024-001",
+    "enrollmentNumber": "ENR-2024-001",
+    "enrollmentDate": "2024-03-01",
+    "status": "ACTIVE",
+    "createdAt": "2024-03-01T08:00:00.000000",
+    "updatedAt": "2024-03-01T08:00:00.000000"
+  }
+}
+```
+
+### ➕ **3. CREAR MATRÍCULA**
+```http
+POST /api/v1/enrollments
+Content-Type: application/json
+```
+
+**📥 Request Body:**
+```json
+{
+  "studentId": "550e8400-e29b-41d4-a716-446655440000",
+  "classroomId": "classroom-2025-001",
+  "enrollmentNumber": "ENR-2025-001",
+  "enrollmentDate": "2025-03-01"
+}
+```
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 201,
+    "message": "Student enrollment created successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    "id": "nuevo-enrollment-uuid",
+    "studentId": "550e8400-e29b-41d4-a716-446655440000",
+    "classroomId": "classroom-2025-001",
+    "enrollmentNumber": "ENR-2025-001",
+    "enrollmentDate": "2025-03-01",
+    "status": "ACTIVE",
+    "createdAt": "2025-09-06T18:45:30.123456",
+    "updatedAt": "2025-09-06T18:45:30.123456"
+  }
+}
+```
+
+**❌ Respuesta Error (Validación):**
+```json
+{
+  "metadata": {
+    "status": 400,
+    "message": "Validation failed",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    "errors": [
+      {
+        "field": "studentId",
+        "message": "Student ID is required"
+      },
+      {
+        "field": "enrollmentNumber",
+        "message": "Enrollment number is required"
+      }
+    ]
+  }
+}
+```
+
+### ✏️ **4. ACTUALIZAR STATUS DE MATRÍCULA**
+```http
+PUT /api/v1/enrollments/{id}/status/{status}
+```
+
+**Valores permitidos:** `ACTIVE`, `COMPLETED`, `TRANSFERRED`, `WITHDRAWN`, `SUSPENDED`
+
+**Ejemplo:** `PUT /api/v1/enrollments/enrollment-uuid-1/status/COMPLETED`
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Student enrollment status updated successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    "id": "enrollment-uuid-1",
+    "studentId": "student-uuid-1",
+    "classroomId": "classroom-2024-001",
+    "enrollmentNumber": "ENR-2024-001",
+    "enrollmentDate": "2024-03-01",
+    "status": "COMPLETED",
+    "createdAt": "2024-03-01T08:00:00.000000",
+    "updatedAt": "2025-09-06T18:45:30.123456"
+  }
+}
+```
+
+### 🗑️ **5. ELIMINAR MATRÍCULA**
+```http
+DELETE /api/v1/enrollments/{id}
+```
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 204,
+    "message": "Student enrollment deleted successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": null
+}
+```
+
+### 🔍 **6. OBTENER MATRÍCULAS POR ESTUDIANTE**
+```http
+GET /api/v1/enrollments/student/{studentId}
+```
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Student enrollments retrieved by student ID successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": [
+    {
+      "id": "enrollment-uuid-1",
+      "studentId": "student-uuid-1",
+      "classroomId": "classroom-2024-001",
+      "enrollmentNumber": "ENR-2024-001",
+      "enrollmentDate": "2024-03-01",
+      "status": "COMPLETED",
+      // ... resto de campos
+    },
+    {
+      "id": "enrollment-uuid-2",
+      "studentId": "student-uuid-1",
+      "classroomId": "classroom-2025-001",
+      "enrollmentNumber": "ENR-2025-001",
+      "enrollmentDate": "2025-03-01",
+      "status": "ACTIVE",
+      // ... resto de campos
+    }
+  ]
+}
+```
+
+### 🔍 **7. OBTENER MATRÍCULAS POR AULA**
+```http
+GET /api/v1/enrollments/classroom/{classroomId}
+```
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Student enrollments retrieved by classroom ID successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": [
+    {
+      "id": "enrollment-uuid-1",
+      "studentId": "student-uuid-1",
+      "classroomId": "classroom-2024-001",
+      // ... resto de campos
+    },
+    {
+      "id": "enrollment-uuid-3",
+      "studentId": "student-uuid-3",
+      "classroomId": "classroom-2024-001",
+      // ... resto de campos
+    }
+  ]
+}
+```
+
+### 🔍 **8. BUSCAR POR NÚMERO DE MATRÍCULA**
+```http
+GET /api/v1/enrollments/enrollment-number/{enrollmentNumber}
+```
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Student enrollment retrieved by enrollment number successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": {
+    "id": "enrollment-uuid-1",
+    "studentId": "student-uuid-1",
+    "classroomId": "classroom-2024-001",
+    "enrollmentNumber": "ENR-2024-001",
+    // ... resto de campos
+  }
+}
+```
+
+### 🔍 **9. FILTRAR POR STATUS DE MATRÍCULA**
+```http
+GET /api/v1/enrollments/status/{status}
+```
+
+**📤 Respuesta:**
+```json
+{
+  "metadata": {
+    "status": 200,
+    "message": "Student enrollments retrieved by status successfully",
+    "timestamp": "2025-09-06T18:45:30.123456"
+  },
+  "data": [
+    {
+      "id": "enrollment-uuid-1",
+      "studentId": "student-uuid-1",
+      "status": "ACTIVE",
+      // ... resto de campos
+    }
+  ]
+}
+```
+
+---
+
+## 🚀 INSTALACIÓN Y EJECUCIÓN
+
+### 📋 **Prerequisitos**
+- **Java 17** o superior
+- **Maven 3.6+**
+- **MongoDB** (local o cloud)
+- **Docker** (opcional)
+
+### 🔧 **Configuración**
+
+1. **Clonar el repositorio:**
+```bash
+git clone https://github.com/Omarrivv/vg-ms-students.git
+cd vg-ms-students
+```
+
+2. **Configurar MongoDB** en `application.yml`:
 ```yaml
 spring:
   data:
     mongodb:
-      uri: mongodb+srv://usuario:password@cluster.mongodb.net/
-      database: msv_students
-      auto-index-creation: true           # 📊 Creación automática índices
+      uri: mongodb+srv://usuario:password@cluster.mongodb.net/?retryWrites=true&w=majority
+      database: vg_ms_students
 ```
 
-## 📊 MÉTRICAS Y MONITOREO
-
-### 📈 Spring Boot Actuator Endpoints
-- `/actuator/health` - Estado de la aplicación
-- `/actuator/metrics` - Métricas de performance
-- `/actuator/info` - Información de la aplicación
-- `/actuator/env` - Variables de entorno
-
-### 🔍 Logging Configuration
-```yaml
-logging:
-  level:
-    root: INFO
-    pe.edu.vallegrande: DEBUG             # 🐛 Debug para el proyecto
-    org.springframework.data.mongodb: DEBUG
-## 🚀 DESPLIEGUE Y EJECUCIÓN
-
-### 🏃‍♂️ Ejecución Local
-
-#### Prerrequisitos
-- ☕ Java 17 o superior
-- 🗃️ MongoDB (local o en la nube)
-- 🐋 Docker (opcional)
-
-#### Pasos para Ejecutar
+3. **Compilar y ejecutar:**
 ```bash
-# 1️⃣ Clonar el repositorio
-git clone https://github.com/Omarrivv/vg-ms-students.git
-cd vg-ms-students
+# Compilar
+mvn clean compile
 
-# 2️⃣ Configurar variables de entorno
-export MONGODB_URI="mongodb+srv://usuario:password@cluster.mongodb.net/"
-export MONGODB_DATABASE="msv_students"
+# Ejecutar tests
+mvn test
 
-# 3️⃣ Compilar el proyecto
-./mvnw clean compile
+# Generar JAR
+mvn clean package -DskipTests
 
-# 4️⃣ Ejecutar tests
-./mvnw test
-
-# 5️⃣ Ejecutar la aplicación
-./mvnw spring-boot:run
+# Ejecutar aplicación
+java -jar target/vg-ms-students-1.0.jar
 ```
 
-#### 🐋 Ejecución con Docker
+### 🐳 **Docker**
+
 ```bash
 # Construir imagen
-docker build -t msv-students:latest .
+docker build -t vg-ms-students:1.0 .
 
 # Ejecutar contenedor
-docker run -p 8081:8081 \
-  -e MONGODB_URI="mongodb+srv://usuario:password@cluster.mongodb.net/" \
-  -e MONGODB_DATABASE="msv_students" \
-  msv-students:latest
+docker run -p 8102:8102 \
+  -e PORT=8102 \
+  -e SPRING_DATA_MONGODB_URI=tu-mongodb-uri \
+  vg-ms-students:1.0
 ```
-
-### 🌐 URLs de Acceso
-- **API Base**: `http://localhost:8081`
-- **Estudiantes**: `http://localhost:8081/api/v1/students`
-- **Matrículas**: `http://localhost:8081/api/v1/classroom-students`
-- **Health Check**: `http://localhost:8081/actuator/health`
-
-## 📋 TESTING Y CALIDAD
-
-### 🧪 Testing Strategy
-```bash
-# Tests unitarios
-./mvnw test
-
-# Tests de integración
-./mvnw integration-test
-
-# Coverage report
-./mvnw jacoco:report
-```
-
-### 📊 Métricas de Calidad
-- **Cobertura de Código**: > 80%
-- **Complejidad Ciclomática**: < 10
-- **Duplicación de Código**: < 3%
-- **Deuda Técnica**: < 5%
-
-## 🔧 CONTROL DE VERSIONES
-
-### 📍 Repositorios Configurados
-```bash
-# 🐙 GitHub (Principal)
-github  https://github.com/Omarrivv/vg-ms-students.git
-
-# 🦊 GitLab (Respaldo)
-origin  https://gitlab.com/vallegrande/as231s5_prs2/vg-ms-students.git
-```
-
-### 🌿 Estrategia de Ramas
-- **`main`**: 🏠 Rama principal estable
-- **`develop`**: 🔧 Rama de desarrollo
-- **`vg-ms-students`**: 🚀 Rama de características
-- **`feature/*`**: ✨ Ramas de características específicas
-- **`hotfix/*`**: 🔥 Correcciones urgentes
-
-### 📝 Workflow de Desarrollo
-
-#### 1️⃣ **Configuración Inicial**
-```bash
-# Verificar repositorios remotos
-git remote -v
-
-# Configurar rama de trabajo
-git checkout vg-ms-students
-git pull origin vg-ms-students
-```
-
-#### 2️⃣ **Desarrollo de Características**
-```bash
-# Crear rama de característica
-git checkout -b feature/nueva-funcionalidad
-
-# Desarrollo y commits
-git add .
-git commit -m "feat: agregar nueva funcionalidad"
-
-# Push a repositorio
-git push origin feature/nueva-funcionalidad
-```
-
-#### 3️⃣ **Integración y Despliegue**
-```bash
-# Merge a rama principal
-git checkout vg-ms-students
-git merge feature/nueva-funcionalidad
-
-# Push a repositorios
-git push origin vg-ms-students
-git push github vg-ms-students
-```
-
-### 🔄 Scripts de Automatización
-
-#### Push Dual (GitLab + GitHub)
-```bash
-#!/bin/bash
-echo "🚀 Desplegando en repositorios..."
-
-# Pull cambios remotos
-git pull origin vg-ms-students
-git pull github vg-ms-students
-
-# Push a GitLab
-echo "📤 Pushing to GitLab..."
-git push origin vg-ms-students
-
-# Push a GitHub
-echo "📤 Pushing to GitHub..."
-git push github vg-ms-students
-
-echo "✅ Despliegue completado exitosamente!"
-```
-
-### 🏷️ Convenciones de Commits
-```bash
-# Tipos de commit
-feat:     # ✨ Nueva característica
-fix:      # 🐛 Corrección de bug
-docs:     # 📚 Documentación
-style:    # 💎 Formato/estilo
-refactor: # ♻️ Refactorización
-test:     # 🧪 Tests
-chore:    # 🔧 Mantenimiento
-
-# Ejemplos
-git commit -m "feat: agregar endpoint de búsqueda por institución"
-git commit -m "fix: corregir validación de documento único"
-git commit -m "docs: actualizar README con ejemplos de API"
-```
-
-## 🤝 CONTRIBUCIÓN Y COLABORACIÓN
-
-### 👥 Equipo de Desarrollo
-- **🧑‍💻 Lead Developer**: Omar Rivera
-- **🏫 Institution**: Valle Grande
-- **📧 Contact**: [omar.rivera@vallegrande.edu.pe]
-
-### 📋 Guías de Contribución
-
-#### 🔍 Code Review Checklist
-- [ ] ✅ Código sigue estándares de Java
-- [ ] 🧪 Tests unitarios incluidos
-- [ ] 📚 Documentación actualizada
-- [ ] 🔒 Validaciones de seguridad implementadas
-- [ ] ⚡ Performance evaluado
-- [ ] 🌐 CORS configurado correctamente
-
-#### 📝 Pull Request Template
-```markdown
-## 📋 Descripción
-Breve descripción de los cambios realizados
-
-## 🎯 Tipo de Cambio
-- [ ] 🐛 Bug fix
-- [ ] ✨ Nueva característica
-- [ ] 💥 Breaking change
-- [ ] 📚 Documentación
-
-## 🧪 Testing
-- [ ] Tests unitarios pasan
-- [ ] Tests de integración pasan
-- [ ] Probado manualmente
-
-## 📋 Checklist
-- [ ] Código revisado
-- [ ] Documentación actualizada
-- [ ] Sin conflictos de merge
-```
-
-## 🆘 TROUBLESHOOTING
-
-### ❌ Problemas Comunes
-
-#### 🔌 Error de Conexión MongoDB
-```bash
-# Verificar URI de conexión
-echo $MONGODB_URI
-
-# Test de conectividad
-mongosh "$MONGODB_URI"
-
-# Logs de conexión
-tail -f logs/application.log | grep -i mongodb
-```
-
-#### 🏃‍♂️ Puerto en Uso
-```bash
-# Verificar procesos en puerto 8081
-lsof -i :8081
-
-# Terminar proceso
-kill -9 <PID>
-
-# Cambiar puerto en application.yml
-server.port: 8082
-```
-
-#### 🔧 Problemas de Compilación
-```bash
-# Limpiar cache Maven
-./mvnw clean
-
-# Reinstalar dependencias
-./mvnw dependency:purge-local-repository
-
-# Compilar desde cero
-./mvnw clean compile
-```
-
-### 📞 Soporte Técnico
-- **📧 Email**: soporte@vallegrande.edu.pe
-- **📱 Teams**: Canal #msv-students-support
-- **📖 Wiki**: [Wiki del Proyecto]
-- **🐛 Issues**: [GitHub Issues]
 
 ---
 
-## 📄 LICENCIA Y CRÉDITOS
+## 🧪 EJEMPLOS PRÁCTICOS CON CURL
 
-### 📜 Licencia
+### 👤 **Gestión de Estudiantes**
+
+```bash
+# 1. Crear estudiante
+curl -X POST http://localhost:8102/api/v1/students \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "María Elena",
+    "lastName": "Rodríguez Sánchez",
+    "documentType": "DNI",
+    "documentNumber": "12345678",
+    "birthDate": "2012-08-20",
+    "gender": "FEMALE",
+    "address": "Calle Las Flores 456",
+    "district": "San Isidro",
+    "province": "Lima",
+    "department": "Lima",
+    "phone": "987654321",
+    "email": "maria.rodriguez@email.com",
+    "guardianName": "Elena",
+    "guardianLastName": "Sánchez",
+    "guardianDocumentType": "DNI",
+    "guardianDocumentNumber": "87654321",
+    "guardianPhone": "912345678",
+    "guardianEmail": "elena.sanchez@email.com",
+    "guardianRelationship": "MOTHER"
+  }'
+
+# 2. Obtener todos los estudiantes
+curl http://localhost:8102/api/v1/students
+
+# 3. Buscar por documento
+curl http://localhost:8102/api/v1/students/document/12345678
+
+# 4. Filtrar por género
+curl http://localhost:8102/api/v1/students/gender/FEMALE
+
+# 5. Actualizar estudiante
+curl -X PUT http://localhost:8102/api/v1/students/{id} \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "María Elena",
+    "lastName": "Rodríguez Sánchez",
+    "documentType": "DNI",
+    "documentNumber": "12345678",
+    "birthDate": "2012-08-20",
+    "gender": "FEMALE",
+    "address": "Nueva Dirección 789",
+    "district": "Miraflores",
+    "province": "Lima",
+    "department": "Lima",
+    "phone": "987654322",
+    "email": "maria.rodriguez.updated@email.com",
+    "guardianName": "Elena",
+    "guardianLastName": "Sánchez",
+    "guardianDocumentType": "DNI",
+    "guardianDocumentNumber": "87654321",
+    "guardianPhone": "912345678",
+    "guardianEmail": "elena.sanchez@email.com",
+    "guardianRelationship": "MOTHER"
+  }'
 ```
-MIT License
 
-Copyright (c) 2024 Valle Grande - MSV Students
+### 📚 **Gestión de Matrículas**
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+```bash
+# 1. Crear matrícula
+curl -X POST http://localhost:8102/api/v1/enrollments \
+  -H "Content-Type: application/json" \
+  -d '{
+    "studentId": "uuid-del-estudiante",
+    "classroomId": "aula-2025-primero-a",
+    "enrollmentNumber": "MAT-2025-001",
+    "enrollmentDate": "2025-03-01"
+  }'
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+# 2. Obtener matrículas por estudiante
+curl http://localhost:8102/api/v1/enrollments/student/{studentId}
+
+# 3. Filtrar por aula
+curl http://localhost:8102/api/v1/enrollments/classroom/aula-2025-primero-a
+
+# 4. Actualizar status
+curl -X PUT http://localhost:8102/api/v1/enrollments/{id}/status/COMPLETED
+
+# 5. Buscar por número de matrícula
+curl http://localhost:8102/api/v1/enrollments/enrollment-number/MAT-2025-001
 ```
-
-### 🙏 Agradecimientos
-- **🌱 Spring Team**: Por el excelente framework
-- **🍃 MongoDB**: Por la base de datos flexible
-- **🏫 Valle Grande**: Por el apoyo institucional
-- **👥 Community**: Por contributions y feedback
 
 ---
 
-### 📊 Estadísticas del Proyecto
-- **📅 Fecha Inicio**: Julio 2024
-- **👨‍💻 Desarrolladores**: 1 Principal + Colaboradores
-- **📝 Líneas de Código**: ~2,500 lines
-- **🧪 Tests**: 25+ test cases
-- **📚 Endpoints**: 16 endpoints RESTful
-- **🎯 Cobertura**: 85%+ test coverage
+## 🔧 STACK TECNOLÓGICO
+
+| Componente | Tecnología | Versión | Descripción |
+|------------|------------|---------|-------------|
+| **Framework** | Spring Boot | 3.1.1 | Framework principal Java |
+| **Programación Reactiva** | Spring WebFlux | 6.x | APIs no bloqueantes |
+| **Base de Datos** | MongoDB | 5.x | Base de datos NoSQL |
+| **Driver BD** | Spring Data MongoDB Reactive | 4.x | Acceso reactivo a MongoDB |
+| **JDK** | OpenJDK | 17 | Plataforma Java |
+| **Build Tool** | Maven | 3.9.x | Gestión de dependencias |
+| **Contenedor** | Docker | Latest | Containerización |
+| **Validaciones** | Jakarta Validation | 3.x | Validación de beans |
+| **Mapping** | MapStruct | 1.5.x | Mapeo entre objetos |
+| **Logging** | Logback | 1.4.x | Sistema de logs |
 
 ---
 
-**🎓 MSV-Students - Sistema de Gestión Académica Estudiantil**  
-*Desarrollado con ❤️ para Valle Grande*
+## 📊 ESTADO DEL PROYECTO
 
-*Este README fue generado automáticamente basado en el análisis completo del código fuente - Última actualización: Julio 2024*
+```
+✅ COMPLETADO - Implementación PRS completa
+✅ COMPLETADO - Arquitectura hexagonal
+✅ COMPLETADO - APIs REST reactivas
+✅ COMPLETADO - Validaciones de negocio
+✅ COMPLETADO - Manejo centralizado de errores
+✅ COMPLETADO - Configuración Docker
+✅ COMPLETADO - Base de datos MongoDB
+✅ COMPLETADO - Documentación completa
+✅ COMPLETADO - Mappers y utilidades
+✅ COMPLETADO - Testing unitario básico
+```
+
+---
+
+## 🎯 ROADMAP FUTURO
+
+### 🔄 **Versión 1.1**
+- [ ] **Swagger/OpenAPI 3.0** documentación interactiva
+- [ ] **Spring Security** autenticación JWT
+- [ ] **Redis Cache** optimización consultas
+- [ ] **Tests de integración** TestContainers
+
+### 📊 **Versión 1.2**
+- [ ] **Reportes PDF** estudiantes/matrículas
+- [ ] **Importación masiva** CSV/Excel
+- [ ] **Notificaciones** email/SMS
+- [ ] **Métricas** Micrometer/Prometheus
+
+### 🚀 **Versión 2.0**
+- [ ] **Event Sourcing** auditoría completa
+- [ ] **CQRS Pattern** separación comando/consulta  
+- [ ] **GraphQL API** alternativa a REST
+- [ ] **Microservices** decomposición modular
+
+---
+
+## 📞 SOPORTE
+
+- **Repositorio:** [https://github.com/Omarrivv/vg-ms-students](https://github.com/Omarrivv/vg-ms-students)
+- **Autor:** Omar Rivera
+- **Email:** omar.rivera@vallegrande.edu.pe
+- **Institución:** Valle Grande
+
+---
+
+**🚀 El microservicio vg-ms-students está completamente implementado con todas las especificaciones PRS y listo para producción!**

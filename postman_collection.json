@@ -1,0 +1,241 @@
+{
+  "info": {
+    "name": "VG MS Students - Postman Collection",
+    "_postman_id": "vg-ms-students-collection",
+    "description": "Colección con los endpoints de Students & Enrollments. Variables: base_url, user_id, institution_id.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Student (SECRETARY)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "SECRETARY" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Carlos\",\n  \"lastName\": \"Pérez\",\n  \"documentType\": \"DNI\",\n  \"documentNumber\": \"99887726\",\n  \"birthDate\": \"2015-01-10\",\n  \"gender\": \"MALE\",\n  \"address\": \"Av. Siempre Viva 123\",\n  \"phone\": \"955666727\",\n  \"parentName\": \"Ana Pérez\",\n  \"parentPhone\": \"955111222\",\n  \"parentEmail\": \"ana.perez@example.com\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}/students/secretary/create", "host": ["{{base_url}}"], "path": ["students","secretary","create"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Students by Institution (SECRETARY)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "SECRETARY" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "url": { "raw": "{{base_url}}/students/secretary", "host": ["{{base_url}}"], "path": ["students","secretary"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Student (SECRETARY)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "SECRETARY" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"address\": \"Jr. Los Girasoles 456\",\n  \"phone\": \"555888999\",\n  \"status\": \"INACTIVE\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}/students/secretary/update/:studentId", "host": ["{{base_url}}"], "path": ["students","secretary","update",":studentId"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Get My Students (TEACHER)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "TEACHER" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "url": { "raw": "{{base_url}}/students/teacher/my-students", "host": ["{{base_url}}"], "path": ["students","teacher","my-students"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Students (AUXILIARY)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "AUXILIARY" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "url": { "raw": "{{base_url}}/students/auxiliary", "host": ["{{base_url}}"], "path": ["students","auxiliary"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Enrollment (SECRETARY)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "SECRETARY" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"studentId\": \"<student-id>\",\n  \"classroomId\": \"classroom-uuid-001\",\n  \"enrollmentDate\": \"2025-03-01\",\n  \"enrollmentType\": \"REGULAR\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}/enrollments/secretary/create", "host": ["{{base_url}}"], "path": ["enrollments","secretary","create"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Enrollments by Institution (SECRETARY)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "SECRETARY" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "url": { "raw": "{{base_url}}/enrollments/secretary", "host": ["{{base_url}}"], "path": ["enrollments","secretary"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Enrollments by Classroom (SECRETARY)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "SECRETARY" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "url": { "raw": "{{base_url}}/enrollments/secretary/by-classroom/:classroomId", "host": ["{{base_url}}"], "path": ["enrollments","secretary","by-classroom",":classroomId"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Enrollment (SECRETARY)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "SECRETARY" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"TRANSFER\",\n  \"transferReason\": \"Familia se muda\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}/enrollments/secretary/update/:enrollmentId", "host": ["{{base_url}}"], "path": ["enrollments","secretary","update",":enrollmentId"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Enrollment QR (SECRETARY)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "SECRETARY" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "url": { "raw": "{{base_url}}/enrollments/secretary/qr/:enrollmentId", "host": ["{{base_url}}"], "path": ["enrollments","secretary","qr",":enrollmentId"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Enrollments by Classroom (AUXILIARY)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "AUXILIARY" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "url": { "raw": "{{base_url}}/enrollments/auxiliary/by-classroom/:classroomId", "host": ["{{base_url}}"], "path": ["enrollments","auxiliary","by-classroom",":classroomId"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Get My Enrollments (TEACHER)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "TEACHER" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "url": { "raw": "{{base_url}}/enrollments/teacher/my-enrollments", "host": ["{{base_url}}"], "path": ["enrollments","teacher","my-enrollments"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Enrollment Observations (TEACHER)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-User-Id", "value": "{{user_id}}" },
+          { "key": "X-User-Roles", "value": "TEACHER" },
+          { "key": "X-Institution-Id", "value": "{{institution_id}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"observations\": \"El estudiante muestra mejora en matemáticas.\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}/enrollments/teacher/observations/:enrollmentId", "host": ["{{base_url}}"], "path": ["enrollments","teacher","observations",":enrollmentId"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Validate Student (public)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/validate-students/:studentId", "host": ["{{base_url}}"], "path": ["validate-students",":studentId"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Validate Enrollment (public)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/validate-enrollments/:enrollmentId", "host": ["{{base_url}}"], "path": ["validate-enrollments",":enrollmentId"] }
+      },
+      "response": []
+    },
+    {
+      "name": "Validate QR (public)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/validate-qr/:qrCode", "host": ["{{base_url}}"], "path": ["validate-qr",":qrCode"] }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8102/api/v1" },
+    { "key": "user_id", "value": "123e4567-e89b-12d3-a456-426614174000" },
+    { "key": "institution_id", "value": "96960392-1e5f-4e66-afc9-4b5bcd771d9f" }
+  ]
+}

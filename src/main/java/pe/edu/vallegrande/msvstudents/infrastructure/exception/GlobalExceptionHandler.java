@@ -1,45 +1,64 @@
 package pe.edu.vallegrande.msvstudents.infrastructure.exception;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.ErrorResponse;
+import pe.edu.vallegrande.msvstudents.infrastructure.exception.custom.InsufficientPermissionsException;
+import pe.edu.vallegrande.msvstudents.infrastructure.exception.custom.InvalidTokenException;
 
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.validation.ConstraintViolationException;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(InsufficientPermissionsException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientPermissionsException(InsufficientPermissionsException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse(ex.getMessage()));
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("message", ex.getMessage());
-        return error;
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()));
     }
 
     @ExceptionHandler(WebExchangeBindException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handleValidationErrors(WebExchangeBindException ex) {
-        Map<String, Object> errors = new HashMap<>();
-        errors.put("message", "Error de validación");
-        
-        Map<String, String> validationErrors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error -> 
-            validationErrors.put(error.getField(), error.getDefaultMessage())
-        );
-        
-        errors.put("errors", validationErrors);
-        return errors;
+    public ResponseEntity<ErrorResponse> handleValidationErrors(WebExchangeBindException ex) {
+        String errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> String.format("'%s': %s", error.getField(), error.getDefaultMessage()))
+                .collect(Collectors.joining(", "));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Validation failed: " + errors));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Constraint validation failed: " + ex.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getMessage()));
     }
 
     @ExceptionHandler(RuntimeException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleRuntimeException(RuntimeException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("message", ex.getMessage());
-        return error;
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
+        // Log the exception here for debugging purposes
+        ex.printStackTrace(); // It's good practice to log the full stack trace
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Internal server error"));
     }
-} 
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        // Log the exception here for debugging purposes
+        ex.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("An unexpected error occurred"));
+    }
+}

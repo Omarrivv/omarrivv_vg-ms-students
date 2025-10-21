@@ -2,7 +2,9 @@ package pe.edu.vallegrande.msvstudents.domain.enums;
 
 public enum Status {
     ACTIVE("A"),
-    INACTIVE("I");
+    INACTIVE("I"),
+    TRANSFER("T"),
+    GRADUATED("G");
 
     private final String value;
 
@@ -13,4 +15,4 @@ public enum Status {
     public String getValue() {
         return value;
     }
-} 
+}

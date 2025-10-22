@@ -27,6 +27,11 @@ public class StudentRepositoryImpl implements StudentRepository {
     }
 
     @Override
+    public Flux<Student> findAll() {
+        return mongoTemplate.findAll(Student.class);
+    }
+
+    @Override
     public Flux<Student> findByInstitutionId(String institutionId) {
         Query query = Query.query(Criteria.where("institutionId").is(institutionId));
         return mongoTemplate.find(query, Student.class);

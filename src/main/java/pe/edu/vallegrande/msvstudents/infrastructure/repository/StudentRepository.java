@@ -10,6 +10,8 @@ public interface StudentRepository {
 
     Mono<Student> findById(String id);
 
+    Flux<Student> findAll();
+
     Flux<Student> findByInstitutionId(String institutionId);
 
     Mono<Boolean> existsById(String studentId);

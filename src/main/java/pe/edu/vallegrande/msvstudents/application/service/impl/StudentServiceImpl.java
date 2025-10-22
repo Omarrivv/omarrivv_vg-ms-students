@@ -36,6 +36,19 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public Mono<StudentResponse> findById(String id) {
+        return studentRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Student not found with id: " + id)))
+                .map(StudentMapper::toResponse);
+    }
+
+    @Override
+    public Flux<StudentResponse> findAll() {
+        return studentRepository.findAll()
+                .map(StudentMapper::toResponse);
+    }
+
+    @Override
     public Flux<StudentResponse> getStudentsByInstitution(String institutionId) {
         return studentRepository.findByInstitutionId(institutionId)
                 .map(StudentMapper::toResponse);

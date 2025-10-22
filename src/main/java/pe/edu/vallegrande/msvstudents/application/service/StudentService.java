@@ -10,6 +10,10 @@ public interface StudentService {
 
     Mono<StudentResponse> createStudent(CreateStudentRequest request, String institutionId);
 
+    Mono<StudentResponse> findById(String id);
+
+    Flux<StudentResponse> findAll();
+
     Flux<StudentResponse> getStudentsByInstitution(String institutionId);
 
     Mono<StudentResponse> updateStudent(String studentId, UpdateStudentRequest request, String institutionId);

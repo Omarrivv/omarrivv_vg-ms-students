@@ -51,4 +51,28 @@ public class StudentRepositoryImpl implements StudentRepository {
         );
         return mongoTemplate.findOne(query, Student.class);
     }
+
+    @Override
+    public Flux<Student> findByInstitutionIdAndStatus(String institutionId, pe.edu.vallegrande.msvstudents.domain.enums.Status status) {
+        Query query = Query.query(
+            Criteria.where("institutionId").is(institutionId)
+                    .and("status").is(status)
+        );
+        return mongoTemplate.find(query, Student.class);
+    }
+
+    @Override
+    public Mono<Long> countByInstitutionId(String institutionId) {
+        Query query = Query.query(Criteria.where("institutionId").is(institutionId));
+        return mongoTemplate.count(query, Student.class);
+    }
+
+    @Override
+    public Mono<Long> countByInstitutionIdAndStatus(String institutionId, pe.edu.vallegrande.msvstudents.domain.enums.Status status) {
+        Query query = Query.query(
+            Criteria.where("institutionId").is(institutionId)
+                    .and("status").is(status)
+        );
+        return mongoTemplate.count(query, Student.class);
+    }
 }

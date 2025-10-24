@@ -65,6 +65,12 @@ public class StudentEnrollmentMapper {
     }
 
     public static StudentEnrollment updateEntity(StudentEnrollment existing, UpdateStudentEnrollmentRequest request) {
+        if (request.getClassroomId() != null) {
+            existing.setClassroomId(request.getClassroomId());
+        }
+        if (request.getEnrollmentType() != null) {
+            existing.setEnrollmentType(request.getEnrollmentType());
+        }
         if (request.getStatus() != null) {
             existing.setStatus(request.getStatus());
         }

@@ -5,6 +5,8 @@ import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.UpdateStudentEn
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.StudentEnrollmentResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.List;
+import java.util.Map;
 
 public interface StudentEnrollmentService {
 
@@ -25,5 +27,18 @@ public interface StudentEnrollmentService {
     Mono<Boolean> existsById(String enrollmentId);
 
     Mono<Boolean> existsByQrCode(String qrCode);
+
+    // Nuevos métodos para lógica de negocio
+    Mono<Map<String, Object>> createBulkEnrollments(List<CreateStudentEnrollmentRequest> requests, String institutionId);
+    
+    Flux<StudentEnrollmentResponse> getEnrollmentsByStatus(String status, String institutionId);
+    
+    Mono<Map<String, Object>> getEnrollmentStatistics(String institutionId);
+    
+    Mono<StudentEnrollmentResponse> transferStudent(String enrollmentId, String newClassroomId, String reason, String institutionId);
+    
+    Flux<StudentEnrollmentResponse> getEnrollmentsByStudent(String studentId, String institutionId);
+    
+    Mono<StudentEnrollmentResponse> cancelEnrollment(String enrollmentId, String reason, String institutionId);
 
 }

@@ -20,4 +20,9 @@ public interface StudentEnrollmentRepository {
 
     Flux<StudentEnrollment> findByClassroomIdIn(List<String> classroomIds);
 
+    // Nuevos métodos para lógica de negocio
+    Flux<StudentEnrollment> findByStudentIdAndInstitutionId(String studentId, String institutionId);
+    
+    Flux<StudentEnrollment> findByClassroomId(String classroomId);
+
 }

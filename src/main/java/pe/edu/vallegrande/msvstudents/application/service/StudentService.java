@@ -5,6 +5,8 @@ import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.UpdateStudentRe
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.StudentResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.List;
+import java.util.Map;
 
 public interface StudentService {
 
@@ -21,5 +23,22 @@ public interface StudentService {
     Flux<StudentResponse> getStudentsByTeacher(String teacherId, String institutionId);
 
     Mono<Boolean> existsById(String studentId);
+
+    // Nuevos métodos para lógica de negocio
+    Flux<StudentResponse> getUnenrolledStudents(String institutionId);
+    
+    Mono<Map<String, Object>> createStudentsBulk(List<CreateStudentRequest> requests, String institutionId);
+    
+    Flux<StudentResponse> searchStudents(String query, String institutionId);
+    
+    Flux<StudentResponse> getStudentsByGrade(String grade, String institutionId);
+    
+    Flux<StudentResponse> getStudentsByStatus(String status, String institutionId);
+    
+    Mono<Map<String, Object>> getStudentStatistics(String institutionId);
+    
+    Mono<StudentResponse> deactivateStudent(String studentId, String institutionId);
+    
+    Mono<StudentResponse> activateStudent(String studentId, String institutionId);
 
 }

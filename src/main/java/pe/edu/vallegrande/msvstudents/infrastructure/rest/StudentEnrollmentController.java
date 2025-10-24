@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import pe.edu.vallegrande.msvstudents.application.service.StudentEnrollmentService;
+import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.BulkEnrollmentsRequest;
+import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.CancelEnrollmentRequest;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.CreateStudentEnrollmentRequest;
+import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.TransferStudentRequest;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.UpdateStudentEnrollmentRequest;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.ApiResponse;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.StudentEnrollmentResponse;
@@ -130,6 +133,157 @@ public class StudentEnrollmentController {
             return enrollmentService.getEnrollmentsByClassroom(classroomId, headers.getInstitutionId())
                     .collectList()
                     .map(list -> ApiResponse.success(list, "Auxiliary enrollments by classroom retrieved successfully"));
+        });
+    }
+
+    // NUEVOS ENDPOINTS PARA LÓGICA DE NEGOCIO
+
+    @PostMapping("/secretary/bulk-create")
+    public Mono<ApiResponse<Map<String, Object>>> createBulkEnrollments(
+            @Valid @RequestBody BulkEnrollmentsRequest request, 
+            ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = HeaderValidator.validateHeadersSimple(
+                exchange, Arrays.asList("SECRETARY")
+            );
+            
+            return enrollmentService.createBulkEnrollments(request.getEnrollments(), headers.getInstitutionId())
+                    .map(result -> ApiResponse.success(
+                        result, 
+                        "Bulk enrollment creation completed"
+                    ));
+        });
+    }
+
+    @GetMapping("/secretary/by-status/{status}")
+    public Mono<ApiResponse<List<StudentEnrollmentResponse>>> getEnrollmentsByStatus(
+            @PathVariable String status,
+            ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = HeaderValidator.validateHeadersSimple(
+                exchange, Arrays.asList("SECRETARY")
+            );
+            
+            return enrollmentService.getEnrollmentsByStatus(status, headers.getInstitutionId())
+                    .collectList()
+                    .map(enrollments -> ApiResponse.success(
+                        enrollments, 
+                        "Enrollments by status retrieved successfully"
+                    ));
+        });
+    }
+
+    @GetMapping("/secretary/statistics")
+    public Mono<ApiResponse<Map<String, Object>>> getEnrollmentStatistics(ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = HeaderValidator.validateHeadersSimple(
+                exchange, Arrays.asList("SECRETARY")
+            );
+            
+            return enrollmentService.getEnrollmentStatistics(headers.getInstitutionId())
+                    .map(statistics -> ApiResponse.success(
+                        statistics, 
+                        "Enrollment statistics retrieved successfully"
+                    ));
+        });
+    }
+
+    @PutMapping("/secretary/transfer/{enrollmentId}")
+    public Mono<ApiResponse<Map<String, Object>>> transferStudent(
+            @PathVariable String enrollmentId,
+            @Valid @RequestBody TransferStudentRequest request,
+            ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = HeaderValidator.validateHeadersSimple(
+                exchange, Arrays.asList("SECRETARY")
+            );
+            
+            return enrollmentService.transferStudent(
+                    enrollmentId, 
+                    request.getNewClassroomId(), 
+                    request.getReason(), 
+                    headers.getInstitutionId())
+                    .map(enrollment -> ApiResponse.success(
+                        Map.of("enrollment", enrollment), 
+                        "Student transferred successfully"
+                    ));
+        });
+    }
+
+    @GetMapping("/secretary/by-student/{studentId}")
+    public Mono<ApiResponse<List<StudentEnrollmentResponse>>> getEnrollmentsByStudent(
+            @PathVariable String studentId,
+            ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = HeaderValidator.validateHeadersSimple(
+                exchange, Arrays.asList("SECRETARY")
+            );
+            
+            return enrollmentService.getEnrollmentsByStudent(studentId, headers.getInstitutionId())
+                    .collectList()
+                    .map(enrollments -> ApiResponse.success(
+                        enrollments, 
+                        "Enrollments by student retrieved successfully"
+                    ));
+        });
+    }
+
+    @PutMapping("/secretary/cancel/{enrollmentId}")
+    public Mono<ApiResponse<Map<String, Object>>> cancelEnrollment(
+            @PathVariable String enrollmentId,
+            @Valid @RequestBody CancelEnrollmentRequest request,
+            ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = HeaderValidator.validateHeadersSimple(
+                exchange, Arrays.asList("SECRETARY")
+            );
+            
+            return enrollmentService.cancelEnrollment(
+                    enrollmentId, 
+                    request.getReason(), 
+                    headers.getInstitutionId())
+                    .map(enrollment -> ApiResponse.success(
+                        Map.of("enrollment", enrollment), 
+                        "Enrollment cancelled successfully"
+                    ));
+        });
+    }
+
+    // ENDPOINTS PARA PROFESORES
+    @GetMapping("/teacher/by-student/{studentId}")
+    public Mono<ApiResponse<List<StudentEnrollmentResponse>>> getEnrollmentsByStudentForTeacher(
+            @PathVariable String studentId,
+            ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = HeaderValidator.validateHeadersSimple(
+                exchange, Arrays.asList("TEACHER")
+            );
+            
+            return enrollmentService.getEnrollmentsByStudent(studentId, headers.getInstitutionId())
+                    .collectList()
+                    .map(enrollments -> ApiResponse.success(
+                        enrollments, 
+                        "Student enrollments retrieved successfully"
+                    ));
+        });
+    }
+
+    // ENDPOINTS PARA AUXILIARES  
+    @GetMapping("/auxiliary/by-student/{studentId}")
+    public Mono<ApiResponse<List<StudentEnrollmentResponse>>> getEnrollmentsByStudentForAuxiliary(
+            @PathVariable String studentId,
+            ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            HeaderValidator.HeaderValidationResult headers = HeaderValidator.validateHeadersSimple(
+                exchange, Arrays.asList("AUXILIARY")
+            );
+            
+            return enrollmentService.getEnrollmentsByStudent(studentId, headers.getInstitutionId())
+                    .collectList()
+                    .map(enrollments -> ApiResponse.success(
+                        enrollments, 
+                        "Student enrollments retrieved successfully"
+                    ));
         });
     }
 }

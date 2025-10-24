@@ -3,6 +3,7 @@ package pe.edu.vallegrande.msvstudents.application.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import pe.edu.vallegrande.msvstudents.application.service.StudentEnrollmentService;
+import pe.edu.vallegrande.msvstudents.domain.enums.EnrollmentStatus;
 import pe.edu.vallegrande.msvstudents.domain.model.StudentEnrollment;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.CreateStudentEnrollmentRequest;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.UpdateStudentEnrollmentRequest;
@@ -14,6 +15,10 @@ import pe.edu.vallegrande.msvstudents.infrastructure.repository.StudentRepositor
 import pe.edu.vallegrande.msvstudents.infrastructure.util.StudentEnrollmentMapper;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -106,6 +111,108 @@ public class StudentEnrollmentServiceImpl implements StudentEnrollmentService {
                         return Mono.error(new InsufficientPermissionsException("SECRETARY", "access enrollment from another institution"));
                     }
                     return Mono.just(enrollment);
+                })
+                .map(StudentEnrollmentMapper::toResponse);
+    }
+
+    @Override
+    public Mono<Map<String, Object>> createBulkEnrollments(List<CreateStudentEnrollmentRequest> requests, String institutionId) {
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger errorCount = new AtomicInteger(0);
+        
+        return Flux.fromIterable(requests)
+                .flatMap(request -> 
+                    createEnrollment(request, institutionId)
+                        .doOnNext(enrollment -> successCount.incrementAndGet())
+                        .onErrorResume(error -> {
+                            errorCount.incrementAndGet();
+                            return Mono.empty();
+                        })
+                )
+                .collectList()
+                .map(enrollments -> {
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("totalRequested", requests.size());
+                    result.put("successfullyCreated", successCount.get());
+                    result.put("errors", errorCount.get());
+                    result.put("enrollments", enrollments);
+                    return result;
+                });
+    }
+
+    @Override
+    public Flux<StudentEnrollmentResponse> getEnrollmentsByStatus(String status, String institutionId) {
+        EnrollmentStatus enrollmentStatus = EnrollmentStatus.valueOf(status.toUpperCase());
+        return enrollmentRepository.findByInstitutionId(institutionId)
+                .filter(enrollment -> enrollment.getStatus() == enrollmentStatus)
+                .map(StudentEnrollmentMapper::toResponse);
+    }
+
+    @Override
+    public Mono<Map<String, Object>> getEnrollmentStatistics(String institutionId) {
+        return enrollmentRepository.findByInstitutionId(institutionId)
+                .collectList()
+                .map(enrollments -> {
+                    Map<String, Object> stats = new HashMap<>();
+                    stats.put("totalEnrollments", enrollments.size());
+                    
+                    long activeCount = enrollments.stream()
+                        .filter(e -> e.getStatus() == EnrollmentStatus.ACTIVE)
+                        .count();
+                    stats.put("activeEnrollments", activeCount);
+                    
+                    long retiredCount = enrollments.stream()
+                        .filter(e -> e.getStatus() == EnrollmentStatus.RETIRED)
+                        .count();
+                    stats.put("retiredEnrollments", retiredCount);
+                    
+                    long transferredCount = enrollments.stream()
+                        .filter(e -> e.getStatus() == EnrollmentStatus.TRANSFER)
+                        .count();
+                    stats.put("transferredEnrollments", transferredCount);
+                    
+                    long completedCount = enrollments.stream()
+                        .filter(e -> e.getStatus() == EnrollmentStatus.COMPLETED)
+                        .count();
+                    stats.put("completedEnrollments", completedCount);
+                    
+                    return stats;
+                });
+    }
+
+    @Override
+    public Mono<StudentEnrollmentResponse> transferStudent(String enrollmentId, String newClassroomId, String reason, String institutionId) {
+        return enrollmentRepository.findById(enrollmentId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Enrollment not found with id: " + enrollmentId)))
+                .flatMap(enrollment -> {
+                    if (!enrollment.getInstitutionId().equals(institutionId)) {
+                        return Mono.error(new InsufficientPermissionsException("SECRETARY", "transfer an enrollment from another institution"));
+                    }
+                    enrollment.setClassroomId(newClassroomId);
+                    enrollment.setStatus(EnrollmentStatus.TRANSFER);
+                    enrollment.setTransferReason(reason);
+                    return enrollmentRepository.save(enrollment);
+                })
+                .map(StudentEnrollmentMapper::toResponse);
+    }
+
+    @Override
+    public Flux<StudentEnrollmentResponse> getEnrollmentsByStudent(String studentId, String institutionId) {
+        return enrollmentRepository.findByStudentIdAndInstitutionId(studentId, institutionId)
+                .map(StudentEnrollmentMapper::toResponse);
+    }
+
+    @Override
+    public Mono<StudentEnrollmentResponse> cancelEnrollment(String enrollmentId, String reason, String institutionId) {
+        return enrollmentRepository.findById(enrollmentId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Enrollment not found with id: " + enrollmentId)))
+                .flatMap(enrollment -> {
+                    if (!enrollment.getInstitutionId().equals(institutionId)) {
+                        return Mono.error(new InsufficientPermissionsException("SECRETARY", "cancel an enrollment from another institution"));
+                    }
+                    enrollment.setStatus(EnrollmentStatus.RETIRED);
+                    enrollment.setTransferReason(reason);
+                    return enrollmentRepository.save(enrollment);
                 })
                 .map(StudentEnrollmentMapper::toResponse);
     }

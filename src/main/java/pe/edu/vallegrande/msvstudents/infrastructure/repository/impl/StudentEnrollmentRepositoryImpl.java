@@ -51,4 +51,19 @@ public class StudentEnrollmentRepositoryImpl implements StudentEnrollmentReposit
         Query query = Query.query(Criteria.where("classroomId").in(classroomIds));
         return mongoTemplate.find(query, StudentEnrollment.class);
     }
+
+    @Override
+    public Flux<StudentEnrollment> findByStudentIdAndInstitutionId(String studentId, String institutionId) {
+        Query query = Query.query(
+            Criteria.where("studentId").is(studentId)
+                    .and("institutionId").is(institutionId)
+        );
+        return mongoTemplate.find(query, StudentEnrollment.class);
+    }
+
+    @Override
+    public Flux<StudentEnrollment> findByClassroomId(String classroomId) {
+        Query query = Query.query(Criteria.where("classroomId").is(classroomId));
+        return mongoTemplate.find(query, StudentEnrollment.class);
+    }
 }

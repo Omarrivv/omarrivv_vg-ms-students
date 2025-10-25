@@ -11,6 +11,7 @@ import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.TransferStudent
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.UpdateStudentEnrollmentRequest;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.ApiResponse;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.StudentEnrollmentResponse;
+import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.EnrollmentWithStudentResponse;
 import pe.edu.vallegrande.msvstudents.infrastructure.security.HeaderValidator;
 import reactor.core.publisher.Mono;
 
@@ -123,14 +124,14 @@ public class StudentEnrollmentController {
     }
 
     @GetMapping("/auxiliary/by-classroom/{classroomId}")
-    public Mono<ApiResponse<List<StudentEnrollmentResponse>>> getEnrollmentsByClassroomAuxiliary(@PathVariable String classroomId, ServerWebExchange exchange) {
+    public Mono<ApiResponse<List<EnrollmentWithStudentResponse>>> getEnrollmentsByClassroomAuxiliary(@PathVariable String classroomId, ServerWebExchange exchange) {
         return Mono.defer(() -> {
             // Validación simple de headers para auxiliar
             HeaderValidator.HeaderValidationResult headers = HeaderValidator.validateHeadersSimple(
                 exchange, Arrays.asList("AUXILIARY")
             );
             
-            return enrollmentService.getEnrollmentsByClassroom(classroomId, headers.getInstitutionId())
+            return enrollmentService.getEnrollmentsByClassroomWithStudentInfo(classroomId, headers.getInstitutionId())
                     .collectList()
                     .map(list -> ApiResponse.success(list, "Auxiliary enrollments by classroom retrieved successfully"));
         });

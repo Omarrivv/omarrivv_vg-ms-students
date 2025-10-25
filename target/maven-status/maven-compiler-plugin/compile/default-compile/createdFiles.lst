@@ -13,6 +13,9 @@ pe\edu\vallegrande\msvstudents\domain\enums\Gender.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\response\StudentResponse.class
 pe\edu\vallegrande\msvstudents\infrastructure\exception\ResourceNotFoundException.class
 pe\edu\vallegrande\msvstudents\infrastructure\rest\ReportsController.class
+pe\edu\vallegrande\msvstudents\infrastructure\rest\internal\InternalStudent.class
+pe\edu\vallegrande\msvstudents\infrastructure\dto\response\InternalEnrollmentResponse$InternalEnrollmentResponseBuilder.class
+pe\edu\vallegrande\msvstudents\infrastructure\dto\response\InternalEnrollmentResponse.class
 pe\edu\vallegrande\msvstudents\infrastructure\exception\custom\InvalidTokenException.class
 pe\edu\vallegrande\msvstudents\infrastructure\repository\impl\StudentRepositoryImpl.class
 pe\edu\vallegrande\msvstudents\infrastructure\config\WebConfig.class
@@ -20,6 +23,7 @@ pe\edu\vallegrande\msvstudents\domain\enums\GuardianRelationship.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\request\CreateStudentRequest.class
 pe\edu\vallegrande\msvstudents\infrastructure\rest\StudentController.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\response\StudentEnrollmentResponse.class
+pe\edu\vallegrande\msvstudents\infrastructure\util\InternalEnrollmentMapper.class
 pe\edu\vallegrande\msvstudents\application\service\StudentService.class
 pe\edu\vallegrande\msvstudents\infrastructure\repository\StudentEnrollmentRepository.class
 pe\edu\vallegrande\msvstudents\infrastructure\security\HeaderValidator.class
@@ -27,6 +31,7 @@ pe\edu\vallegrande\msvstudents\infrastructure\dto\request\BulkEnrollmentsRequest
 pe\edu\vallegrande\msvstudents\domain\enums\EnrollmentStatus.class
 pe\edu\vallegrande\msvstudents\infrastructure\util\StudentMapper.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\request\UpdateStudentEnrollmentRequest.class
+pe\edu\vallegrande\msvstudents\infrastructure\dto\response\EnrollmentWithStudentResponse$EnrollmentWithStudentResponseBuilder.class
 pe\edu\vallegrande\msvstudents\infrastructure\rest\ValidationController.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\response\ApiResponse.class
 pe\edu\vallegrande\msvstudents\application\service\impl\StudentServiceImpl.class
@@ -44,6 +49,8 @@ pe\edu\vallegrande\msvstudents\domain\enums\Status.class
 pe\edu\vallegrande\msvstudents\infrastructure\config\MongoConfig.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\request\StudentRequest.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\request\UpdateStudentRequest.class
+pe\edu\vallegrande\msvstudents\infrastructure\util\EnrollmentWithStudentMapper.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\response\ErrorResponse.class
 pe\edu\vallegrande\msvstudents\infrastructure\dto\request\CreateStudentEnrollmentRequest.class
 pe\edu\vallegrande\msvstudents\infrastructure\rest\StudentEnrollmentController.class
+pe\edu\vallegrande\msvstudents\infrastructure\dto\response\EnrollmentWithStudentResponse.class

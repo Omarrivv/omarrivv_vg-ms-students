@@ -8,11 +8,15 @@ import pe.edu.vallegrande.msvstudents.domain.model.StudentEnrollment;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.CreateStudentEnrollmentRequest;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.request.UpdateStudentEnrollmentRequest;
 import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.StudentEnrollmentResponse;
+import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.EnrollmentWithStudentResponse;
+import pe.edu.vallegrande.msvstudents.infrastructure.dto.response.InternalEnrollmentResponse;
 import pe.edu.vallegrande.msvstudents.infrastructure.exception.ResourceNotFoundException;
 import pe.edu.vallegrande.msvstudents.infrastructure.exception.custom.InsufficientPermissionsException;
 import pe.edu.vallegrande.msvstudents.infrastructure.repository.StudentEnrollmentRepository;
 import pe.edu.vallegrande.msvstudents.infrastructure.repository.StudentRepository;
 import pe.edu.vallegrande.msvstudents.infrastructure.util.StudentEnrollmentMapper;
+import pe.edu.vallegrande.msvstudents.infrastructure.util.EnrollmentWithStudentMapper;
+import pe.edu.vallegrande.msvstudents.infrastructure.util.InternalEnrollmentMapper;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.util.List;
@@ -215,5 +219,27 @@ public class StudentEnrollmentServiceImpl implements StudentEnrollmentService {
                     return enrollmentRepository.save(enrollment);
                 })
                 .map(StudentEnrollmentMapper::toResponse);
+    }
+
+    @Override
+    public Flux<EnrollmentWithStudentResponse> getEnrollmentsByClassroomWithStudentInfo(String classroomId, String institutionId) {
+        return enrollmentRepository.findByClassroomId(classroomId)
+                .filter(enrollment -> enrollment.getInstitutionId().equals(institutionId))
+                .flatMap(enrollment -> 
+                    studentRepository.findById(enrollment.getStudentId())
+                        .map(student -> EnrollmentWithStudentMapper.toResponse(enrollment, student))
+                        .switchIfEmpty(Mono.empty()) // Si no encuentra el estudiante, omite esta matrícula
+                );
+    }
+
+    @Override
+    public Flux<InternalEnrollmentResponse> getInternalEnrollmentsByClassroom(String classroomId, String institutionId) {
+        return enrollmentRepository.findByClassroomId(classroomId)
+                .filter(enrollment -> enrollment.getInstitutionId().equals(institutionId))
+                .flatMap(enrollment -> 
+                    studentRepository.findById(enrollment.getStudentId())
+                        .map(student -> InternalEnrollmentMapper.toResponse(enrollment, student))
+                        .switchIfEmpty(Mono.empty()) // Si no encuentra el estudiante, omite esta matrícula
+                );
     }
 }

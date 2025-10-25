@@ -40,5 +40,11 @@ public interface StudentEnrollmentService {
     Flux<StudentEnrollmentResponse> getEnrollmentsByStudent(String studentId, String institutionId);
     
     Mono<StudentEnrollmentResponse> cancelEnrollment(String enrollmentId, String reason, String institutionId);
+    
+    // Método específico para auxiliares - incluye información del estudiante
+    Flux<pe.edu.vallegrande.msvstudents.infrastructure.dto.response.EnrollmentWithStudentResponse> getEnrollmentsByClassroomWithStudentInfo(String classroomId, String institutionId);
+    
+    // Método específico para servicios internos - información básica
+    Flux<pe.edu.vallegrande.msvstudents.infrastructure.dto.response.InternalEnrollmentResponse> getInternalEnrollmentsByClassroom(String classroomId, String institutionId);
 
 }

@@ -18,9 +18,8 @@ public class InternalStudent {
 
     @GetMapping("/by-classroom/{classroomId}")
     public Mono<ApiResponse<List<InternalEnrollmentResponse>>> getEnrollmentsByClassroomInternal(
-            @PathVariable String classroomId,
-            @RequestParam String institutionId) {
-        return enrollmentService.getInternalEnrollmentsByClassroom(classroomId, institutionId)
+            @PathVariable String classroomId) {
+        return enrollmentService.getInternalEnrollmentsByClassroom(classroomId, null)
                 .collectList()
                 .map(list -> ApiResponse.success(list, "Internal enrollments by classroom retrieved successfully"));
     }

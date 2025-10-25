@@ -235,7 +235,7 @@ public class StudentEnrollmentServiceImpl implements StudentEnrollmentService {
     @Override
     public Flux<InternalEnrollmentResponse> getInternalEnrollmentsByClassroom(String classroomId, String institutionId) {
         return enrollmentRepository.findByClassroomId(classroomId)
-                .filter(enrollment -> enrollment.getInstitutionId().equals(institutionId))
+                // No filtrar por institución en endpoints internos
                 .flatMap(enrollment -> 
                     studentRepository.findById(enrollment.getStudentId())
                         .map(student -> InternalEnrollmentMapper.toResponse(enrollment, student))

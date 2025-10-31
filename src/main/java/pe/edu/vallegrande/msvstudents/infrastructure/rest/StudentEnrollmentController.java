@@ -251,6 +251,20 @@ public class StudentEnrollmentController {
     }
 
     // ENDPOINTS PARA PROFESORES
+    @GetMapping("/teacher/by-classroom/{classroomId}")
+    public Mono<ApiResponse<List<EnrollmentWithStudentResponse>>> getEnrollmentsByClassroomTeacher(@PathVariable String classroomId, ServerWebExchange exchange) {
+        return Mono.defer(() -> {
+            // Validación simple de headers para profesor
+            HeaderValidator.HeaderValidationResult headers = HeaderValidator.validateHeadersSimple(
+                exchange, Arrays.asList("TEACHER")
+            );
+            
+            return enrollmentService.getEnrollmentsByClassroomWithStudentInfo(classroomId, headers.getInstitutionId())
+                    .collectList()
+                    .map(responses -> ApiResponse.success(responses, "Teacher enrollments by classroom retrieved successfully"));
+        });
+    }
+    
     @GetMapping("/teacher/by-student/{studentId}")
     public Mono<ApiResponse<List<StudentEnrollmentResponse>>> getEnrollmentsByStudentForTeacher(
             @PathVariable String studentId,

@@ -1,0 +1,21 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/students_test
+  profiles:
+    active: test
+    
+logging:
+  level:
+    pe.edu.vallegrande: DEBUG
+    org.springframework.data.mongodb: DEBUG
+
+server:
+  port: 0  # Puerto aleatorio para pruebas
+
+# Configuración para testing
+test:
+  database:
+    cleanup: true
+  mock:
+    enabled: true

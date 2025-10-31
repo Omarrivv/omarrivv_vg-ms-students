@@ -1,10 +1,56 @@
-# 🎓 vg-ms-students - Microservicio de Gestión Estudiantil
+# 🚀 VG-MS-Students - Microservicio Educativo Empresarial
 
-[![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://openjdk.java.net/projects/jdk/17/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.1.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![Spring WebFlux](https://img.shields.io/badge/Spring%20WebFlux-Reactive-blue.svg)](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Reactive-green.svg)](https://www.mongodb.com/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+<div align="center">
+
+![Logo VG](https://img.shields.io/badge/🎓_Valle_Grande-Enterprise_Microservice-blue?style=for-the-badge&logo=graduation-cap)
+![CI/CD](https://img.shields.io/badge/CI/CD-🚀_AUTOMATED-purple?style=for-the-badge)
+![Tests](https://img.shields.io/badge/TESTS-✅_22_PASSING-brightgreen?style=for-the-badge)
+
+</div>
+
+---
+
+## 🌟 **STACK TECNOLÓGICO MODERNO**
+
+<div align="center">
+
+[![Java](https://img.shields.io/badge/Java_17-ED8B00?style=for-the-badge&logo=java&logoColor=white)](https://openjdk.java.net/projects/jdk/17/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot_3.1-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![WebFlux](https://img.shields.io/badge/Spring_WebFlux-6DB33F?style=for-the-badge&logo=spring&logoColor=white)](https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html)
+[![MongoDB](https://img.shields.io/badge/MongoDB_Reactive-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+
+</div>
+
+---
+
+## 🌐 **CALIDAD DE CÓDIGO EMPRESARIAL - SONARCLOUD**
+
+<div align="center">
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=vallegrande_vg-ms-students&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=vallegrande_vg-ms-students)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=vallegrande_vg-ms-students&metric=coverage)](https://sonarcloud.io/summary/new_code?id=vallegrande_vg-ms-students)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=vallegrande_vg-ms-students&metric=bugs)](https://sonarcloud.io/summary/new_code?id=vallegrande_vg-ms-students)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=vallegrande_vg-ms-students&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=vallegrande_vg-ms-students)
+
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=vallegrande_vg-ms-students&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=vallegrande_vg-ms-students)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=vallegrande_vg-ms-students&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=vallegrande_vg-ms-students)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=vallegrande_vg-ms-students&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=vallegrande_vg-ms-students)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=vallegrande_vg-ms-students&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=vallegrande_vg-ms-students)
+
+### 🔗 **[📊 VER DASHBOARD COMPLETO EN SONARCLOUD](https://sonarcloud.io/project/overview?id=vallegrande_vg-ms-students)**
+
+</div>
+
+---
+
+## 🎯 **¿QUÉ ES VG-MS-STUDENTS?**
+
+<div align="center">
+
+**🚀 Microservicio educativo de clase mundial** diseñado con **arquitectura reactiva** para gestión integral de estudiantes con **estándares empresariales**
+
+</div>
 
 ---
 

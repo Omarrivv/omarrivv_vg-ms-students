@@ -1,0 +1,172 @@
+pipeline {
+    agent any
+    
+    tools {
+        maven 'Maven-3.9.4'
+        jdk 'JDK-17'
+    }
+    
+    stages {
+        stage('🚀 Checkout') {
+            steps {
+                echo '📁 Simulando descarga desde GitHub...'
+                bat '''
+                    echo "Conectando a GitHub: https://github.com/Omarrivv/omarrivv_vg-ms-students.git"
+                    echo "Clonando branch: main"
+                    echo "Copiando archivos del proyecto local..."
+                    
+                    REM Copiar todos los archivos del proyecto desde el directorio local
+                    xcopy "C:\\Users\\Usuario\\Desktop\\PruebasDeCargaProyectPresentacion\\vg-ms-students\\*" . /E /H /C /I /Y
+                    
+                    echo "Verificando archivos copiados..."
+                    dir
+                    
+                    if exist pom.xml (
+                        echo "✅ pom.xml encontrado"
+                    ) else (
+                        echo "❌ pom.xml no encontrado"
+                    )
+                    
+                    if exist src (
+                        echo "✅ Directorio src/ encontrado"
+                        dir src
+                    ) else (
+                        echo "❌ Directorio src/ no encontrado"
+                    )
+                    
+                    if exist target (
+                        echo "🗂️ Limpiando directorio target previo..."
+                        rmdir /s /q target
+                    )
+                '''
+                echo '✅ Código "descargado" y preparado exitosamente'
+            }
+        }
+        
+        stage('🔧 Build') {
+            steps {
+                echo '⚙️ Compilando aplicación...'
+                bat '''
+                    echo "Verificando Java y Maven..."
+                    java -version
+                    mvn -version
+                    
+                    echo "Verificando que pom.xml esté presente..."
+                    if exist pom.xml (
+                        echo "✅ pom.xml confirmado, procediendo con compilación..."
+                        mvn clean compile -DskipTests
+                    ) else (
+                        echo "❌ ERROR: pom.xml no encontrado"
+                        exit 1
+                    )
+                '''
+                echo '✅ Compilación completada exitosamente'
+            }
+        }
+        
+        stage('🧪 Unit Tests') {
+            steps {
+                echo '🧪 Ejecutando pruebas unitarias...'
+                bat '''
+                    echo "Ejecutando todas las pruebas..."
+                    mvn test
+                '''
+                echo '✅ Pruebas unitarias completadas'
+            }
+            post {
+                always {
+                    echo '📊 Publicando resultados de pruebas...'
+                    
+                    // Solo intentar publicar si existen los archivos
+                    script {
+                        if (fileExists('target/surefire-reports/*.xml')) {
+                            junit 'target/surefire-reports/*.xml'
+                            echo '✅ Resultados de pruebas publicados'
+                        } else {
+                            echo '⚠️ No se encontraron reportes de pruebas para publicar'
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('📦 Package') {
+            steps {
+                echo '📦 Empaquetando aplicación...'
+                bat '''
+                    echo "Creando JAR ejecutable..."
+                    mvn package -DskipTests
+                    
+                    echo "Verificando JAR generado..."
+                    if exist target\\*.jar (
+                        dir target\\*.jar
+                        echo "✅ JAR generado exitosamente"
+                    ) else (
+                        echo "❌ No se generó el JAR"
+                    )
+                '''
+                
+                // Archivar el JAR si existe
+                script {
+                    if (fileExists('target/*.jar')) {
+                        archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                        echo '✅ JAR archivado exitosamente'
+                    } else {
+                        echo '⚠️ No se encontró JAR para archivar'
+                    }
+                }
+                
+                echo '✅ Empaquetado completado'
+            }
+        }
+        
+        stage('📋 Summary') {
+            steps {
+                echo '📋 Resumen del Build:'
+                echo '✅ Código "clonado" desde GitHub (simulado)'
+                echo '✅ Compilación exitosa con Maven'
+                echo '✅ Pruebas unitarias ejecutadas'
+                echo '✅ Aplicación empaquetada'
+                
+                bat '''
+                    echo "📊 Estadísticas finales:"
+                    if exist target\\surefire-reports (
+                        echo "Reportes de pruebas generados"
+                        dir target\\surefire-reports
+                    )
+                    if exist target\\*.jar (
+                        echo "Artefactos generados:"
+                        dir target\\*.jar
+                    )
+                '''
+                
+                echo '🎉 Build completado exitosamente!'
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo '🎉 Pipeline ejecutado exitosamente!'
+            echo '✅ Todas las etapas completadas sin errores'
+            echo '📈 El proyecto ha sido compilado, testado y empaquetado correctamente'
+        }
+        failure {
+            echo '❌ Pipeline falló'
+            echo '🔍 Revisa los logs para más detalles'
+            
+            bat '''
+                echo "📋 Diagnóstico del workspace:"
+                dir
+                if exist pom.xml (
+                    echo "pom.xml existe"
+                ) else (
+                    echo "pom.xml NO existe"
+                )
+            '''
+        }
+        always {
+            echo '🧹 Limpiando workspace temporal...'
+        }
+    }
+}

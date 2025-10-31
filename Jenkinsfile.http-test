@@ -1,0 +1,27 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('🧪 Test Slack HTTP') {
+            steps {
+                script {
+                    // Método directo HTTP sin plugin
+                    def slackMessage = [
+                        text: "🎉 *TEST DIRECTO HTTP*\n⏰ ${new Date()}\n✅ Slack + Jenkins funcionando sin plugin!"
+                    ]
+                    
+                    withCredentials([string(credentialsId: 'slack-webhook', variable: 'WEBHOOK_URL')]) {
+                        def response = httpRequest(
+                            httpMode: 'POST',
+                            url: "${WEBHOOK_URL}",
+                            contentType: 'APPLICATION_JSON',
+                            requestBody: groovy.json.JsonOutput.toJson(slackMessage)
+                        )
+                        
+                        echo "Response: ${response.status}"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,96 @@
+pipeline {
+    agent any
+    
+    tools {
+        maven 'Maven-3.9.4'
+        jdk 'JDK-17'
+    }
+    
+    stages {
+        stage('🚀 Checkout') {
+            steps {
+                echo '📁 Clonando repositorio...'
+                checkout scm
+                echo '✅ Repositorio clonado exitosamente'
+            }
+        }
+        
+        stage('🔧 Build') {
+            steps {
+                echo '⚙️ Compilando aplicación...'
+                bat '''
+                    echo "Verificando Java y Maven..."
+                    java -version
+                    mvn -version
+                    
+                    echo "Compilando proyecto..."
+                    mvn clean compile -DskipTests
+                '''
+                echo '✅ Compilación completada exitosamente'
+            }
+        }
+        
+        stage('🧪 Unit Tests') {
+            steps {
+                echo '🧪 Ejecutando pruebas unitarias...'
+                bat '''
+                    echo "Ejecutando todas las pruebas..."
+                    mvn test
+                '''
+                echo '✅ Pruebas unitarias completadas'
+            }
+            post {
+                always {
+                    echo '📊 Publicando resultados de pruebas...'
+                    
+                    // Publicar resultados de JUnit
+                    publishTestResults([
+                        testResultsPattern: 'target/surefire-reports/*.xml'
+                    ])
+                    
+                    echo '✅ Resultados de pruebas publicados'
+                }
+            }
+        }
+        
+        stage('📦 Package') {
+            steps {
+                echo '📦 Empaquetando aplicación...'
+                bat '''
+                    echo "Creando JAR ejecutable..."
+                    mvn package -DskipTests
+                '''
+                
+                // Archivar el JAR generado
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                echo '✅ Aplicación empaquetada exitosamente'
+            }
+        }
+        
+        stage('📋 Summary') {
+            steps {
+                echo '📋 Resumen del Build:'
+                echo '✅ Checkout completado'
+                echo '✅ Compilación exitosa'
+                echo '✅ Pruebas unitarias ejecutadas'
+                echo '✅ Empaquetado completado'
+                echo '🎉 Build completado exitosamente!'
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo '🎉 Pipeline ejecutado exitosamente!'
+            echo '✅ Todas las etapas completadas sin errores'
+        }
+        failure {
+            echo '❌ Pipeline falló'
+            echo '🔍 Revisa los logs para más detalles'
+        }
+        always {
+            echo '🧹 Limpiando workspace...'
+            // Opcional: limpiar archivos temporales
+        }
+    }
+}

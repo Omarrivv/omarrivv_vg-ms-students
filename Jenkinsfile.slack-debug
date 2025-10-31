@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('🧪 Test Slack') {
+            steps {
+                script {
+                    try {
+                        slackSend(
+                            channel: '#jenkins-ci-cd-bot',
+                            color: 'good',
+                            message: """
+🧪 *TEST DE SLACK DESDE JENKINS* 
+⏰ ${new Date()}
+✅ Si ves este mensaje, Slack funciona correctamente!
+                            """,
+                            teamDomain: 'vallegrande',
+                            tokenCredentialId: 'slack-token'
+                        )
+                        echo "✅ Slack notification sent successfully"
+                    } catch (Exception e) {
+                        echo "❌ Slack notification failed: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+    }
+}

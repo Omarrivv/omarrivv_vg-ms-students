@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('🧪 Test Slack') {
+            steps {
+                echo "Probando conexión con Slack..."
+                
+                slackSend(
+                    channel: '#jenkins-ci-cd-bot',
+                    color: 'good',
+                    message: """
+🎉 *¡HOLA DESDE JENKINS!* 
+⏰ Fecha: ${new Date().format('dd/MM/yyyy HH:mm:ss')}
+✅ Si ves este mensaje, ¡Slack + Jenkins funciona perfectamente!
+🤖 Bot: lab_jeankins está conectado
+🚀 Pipeline: Funcionando correctamente
+                    """,
+                    teamDomain: 'vallegrande',
+                    tokenCredentialId: 'slack-token'
+                )
+                
+                echo "✅ Mensaje enviado a Slack correctamente"
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "🎉 Test de Slack completado exitosamente"
+        }
+    }
+}

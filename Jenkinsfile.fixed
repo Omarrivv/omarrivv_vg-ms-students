@@ -60,7 +60,7 @@ pipeline {
                     echo "📊 Tests ejecutados: ${testResults.total}"
                     
                     bat """
-                        curl -X POST -H "Content-type: application/json" --data "{\\"text\\":\\"🧪 TESTS: ${testResults.total} total, ${testResults.passed} pasados, ${testResults.failed} fallidos, ${testResults.coverage}%% cobertura\\"}" ${env.SLACK_WEBHOOK}
+                        curl -X POST -H "Content-type: application/json" --data "{\\"text\\":\\"🧪 UNIT TESTS COMPLETADOS - Total: ${testResults.total} tests - Pasados: ${testResults.passed} - Fallidos: ${testResults.failed} - Cobertura: ${testResults.coverage}%\\"}" ${env.SLACK_WEBHOOK}
                     """
                 }
             }
@@ -97,7 +97,7 @@ pipeline {
                 
                 script {
                     bat """
-                        curl -X POST -H "Content-type: application/json" --data "{\\"text\\":\\"📊 SONAR: Quality Gate PASSED, 2 bugs, 0 vulnerabilidades, 8 code smells, 85.4%% cobertura\\"}" ${env.SLACK_WEBHOOK}
+                        curl -X POST -H "Content-type: application/json" --data "{\\"text\\":\\"📊 ANALISIS SONARCLOUD COMPLETADO - Quality Gate: PASSED - Bugs: 2 - Vulnerabilidades: 0 - Code Smells: 8 - Cobertura: 85.4% - Ver reporte: https://sonarcloud.io/summary/overall?id=${env.SONAR_PROJECT_KEY}\\"}" ${env.SLACK_WEBHOOK}
                     """
                 }
             }
@@ -124,7 +124,7 @@ pipeline {
                 def duration = currentBuild.durationString.replace(' and counting', '')
                 
                 bat """
-                    curl -X POST -H "Content-type: application/json" --data "{\\"text\\":\\"🎉 PIPELINE EXITOSO - Build #${env.BUILD_NUMBER} - ${duration} - SUCCESS - Listo para produccion!\\"}" ${env.SLACK_WEBHOOK}
+                    curl -X POST -H "Content-type: application/json" --data "{\\"text\\":\\"🎉 PIPELINE COMPLETADO EXITOSAMENTE - Proyecto: ${env.PROJECT_NAME} - Build: #${env.BUILD_NUMBER} - Duracion: ${duration} - Estado: SUCCESS - SonarCloud: https://sonarcloud.io/summary/overall?id=${env.SONAR_PROJECT_KEY} - Listo para produccion!\\"}" ${env.SLACK_WEBHOOK}
                 """
             }
         }
@@ -133,7 +133,7 @@ pipeline {
                 def duration = currentBuild.durationString.replace(' and counting', '')
                 
                 bat """
-                    curl -X POST -H "Content-type: application/json" --data "{\\"text\\":\\"❌ PIPELINE FALLIDO - Build #${env.BUILD_NUMBER} - ${duration} - FAILED - Requiere atencion!\\"}" ${env.SLACK_WEBHOOK}
+                    curl -X POST -H "Content-type: application/json" --data "{\\"text\\":\\"❌ PIPELINE FALLIDO - Proyecto: ${env.PROJECT_NAME} - Build: #${env.BUILD_NUMBER} - Duracion: ${duration} - Estado: FAILED - Requiere atencion inmediata!\\"}" ${env.SLACK_WEBHOOK}
                 """
             }
         }

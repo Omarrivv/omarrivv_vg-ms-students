@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('🧪 Test Slack Webhook') {
+            steps {
+                echo "Probando notificaciones con Webhook..."
+                
+                script {
+                    withCredentials([string(credentialsId: 'slack-webhook-url', variable: 'WEBHOOK_URL')]) {
+                        // Mensaje simple sin caracteres especiales
+                        bat """
+                            curl -X POST -H "Content-type: application/json" --data "{\"text\":\"🎉 TEST WEBHOOK DESDE JENKINS - ${new Date().format('dd/MM/yyyy HH:mm:ss')} - Webhook funcionando correctamente!\"}" "%WEBHOOK_URL%"
+                        """
+                    }
+                }
+                
+                echo "✅ Mensaje enviado via webhook a Slack"
+                sleep 2
+                
+                script {
+                    withCredentials([string(credentialsId: 'slack-webhook-url', variable: 'WEBHOOK_URL')]) {
+                        bat """
+                            curl -X POST -H "Content-type: application/json" --data "{\"text\":\"🔧 BUILD SIMULADO COMPLETADO - Pipeline funcionando perfectamente - Listo para integracion completa!\"}" "%WEBHOOK_URL%"
+                        """
+                    }
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            script {
+                withCredentials([string(credentialsId: 'slack-webhook-url', variable: 'WEBHOOK_URL')]) {
+                    bat """
+                        curl -X POST -H "Content-type: application/json" --data "{\"text\":\"🎊 PIPELINE DE PRUEBA EXITOSO - Webhook configurado correctamente - Notificaciones funcionando - Listo para pipeline completo CI/CD\"}" "%WEBHOOK_URL%"
+                    """
+                }
+            }
+        }
+        failure {
+            script {
+                withCredentials([string(credentialsId: 'slack-webhook-url', variable: 'WEBHOOK_URL')]) {
+                    bat """
+                        curl -X POST -H "Content-type: application/json" --data "{\"text\":\"❌ PRUEBA DE WEBHOOK FALLIDA - Revisar configuracion\"}" "%WEBHOOK_URL%"
+                    """
+                }
+            }
+        }
+    }
+}

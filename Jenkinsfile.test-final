@@ -1,0 +1,80 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('🧪 Test Slack Final') {
+            steps {
+                echo "Probando Slack con token correcto..."
+                
+                script {
+                    try {
+                        slackSend(
+                            channel: '#jenkins-ci-cd-bot',
+                            color: 'good',
+                            message: """
+🎉 *¡JENKINS + SLACK FUNCIONANDO!* 
+⏰ Fecha: ${new Date().format('dd/MM/yyyy HH:mm:ss')}
+✅ Token: Correcto y actualizado
+🤖 Bot: lab_jeankins conectado
+🏢 Workspace: vallegrande
+🔧 Build: #${env.BUILD_NUMBER}
+
+¡Por fin funciona! 🚀
+                            """,
+                            teamDomain: 'vallegrande',
+                            tokenCredentialId: 'slack-token'
+                        )
+                        echo "✅ ¡Mensaje enviado exitosamente a Slack!"
+                    } catch (Exception e) {
+                        echo "❌ Error: ${e.getMessage()}"
+                        error "Slack notification failed: ${e.getMessage()}"
+                    }
+                }
+            }
+        }
+        
+        stage('🔧 Simulación Build') {
+            steps {
+                echo "⚙️ Simulando build..."
+                sleep 2
+                
+                slackSend(
+                    channel: '#jenkins-ci-cd-bot',
+                    color: 'good',
+                    message: "✅ *BUILD COMPLETADO* - Todo funcionando perfectamente!",
+                    teamDomain: 'vallegrande',
+                    tokenCredentialId: 'slack-token'
+                )
+            }
+        }
+    }
+    
+    post {
+        success {
+            slackSend(
+                channel: '#jenkins-ci-cd-bot',
+                color: 'good',
+                message: """
+🎊 *PIPELINE COMPLETADO EXITOSAMENTE* 🎊
+
+🎯 Test de integración Slack + Jenkins: ✅ EXITOSO
+📱 Notificaciones funcionando correctamente
+⚡ Sistema listo para CI/CD completo
+
+¡Ahora podemos proceder con el pipeline principal! 🚀
+                """,
+                teamDomain: 'vallegrande',
+                tokenCredentialId: 'slack-token'
+            )
+        }
+        failure {
+            slackSend(
+                channel: '#jenkins-ci-cd-bot',
+                color: 'danger',
+                message: "❌ *TEST FALLIDO* - Revisar configuración de Slack",
+                teamDomain: 'vallegrande',
+                tokenCredentialId: 'slack-token'
+            )
+        }
+    }
+}

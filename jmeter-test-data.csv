@@ -1,0 +1,16 @@
+firstName,lastName,documentType,documentNumber,birthDate,gender,address,phone,parentName,parentPhone,parentEmail,studentId,grade,status
+Juan,Pérez,DNI,12345678,2010-05-15,MALE,Lima,987654321,Carlos Pérez,987654322,padre1@email.com,1,1ro,ACTIVE
+María,García,DNI,12345679,2011-03-20,FEMALE,Arequipa,987654323,Ana García,987654324,madre1@email.com,2,2do,ACTIVE
+Luis,Martínez,DNI,12345680,2009-07-10,MALE,Cusco,987654325,Pedro Martínez,987654326,padre2@email.com,3,3ro,ACTIVE
+Sofia,López,DNI,12345681,2010-12-05,FEMALE,Trujillo,987654327,Carmen López,987654328,madre2@email.com,4,1ro,INACTIVE
+Carlos,Rodríguez,DNI,12345682,2011-08-30,MALE,Piura,987654329,José Rodríguez,987654330,padre3@email.com,5,2do,ACTIVE
+Ana,Torres,DNI,12345683,2010-04-18,FEMALE,Iquitos,987654331,Rosa Torres,987654332,madre3@email.com,6,3ro,ACTIVE
+Diego,Flores,DNI,12345684,2009-11-25,MALE,Huancayo,987654333,Miguel Flores,987654334,padre4@email.com,7,1ro,ACTIVE
+Lucía,Vargas,DNI,12345685,2010-09-12,FEMALE,Tacna,987654335,Elena Vargas,987654336,madre4@email.com,8,2do,ACTIVE
+Mateo,Herrera,DNI,12345686,2011-01-08,MALE,Chimbote,987654337,Ricardo Herrera,987654338,padre5@email.com,9,3ro,ACTIVE
+Valentina,Castro,DNI,12345687,2010-06-22,FEMALE,Puno,987654339,Patricia Castro,987654340,madre5@email.com,10,1ro,ACTIVE
+Sebastián,Morales,DNI,12345688,2009-10-15,MALE,Cajamarca,987654341,Fernando Morales,987654342,padre6@email.com,11,2do,ACTIVE
+Isabella,Jiménez,DNI,12345689,2011-05-03,FEMALE,Ayacucho,987654343,Silvia Jiménez,987654344,madre6@email.com,12,3ro,ACTIVE
+Nicolás,Ruiz,DNI,12345690,2010-02-28,MALE,Sullana,987654345,Alberto Ruiz,987654346,padre7@email.com,13,1ro,ACTIVE
+Camila,Mendoza,DNI,12345691,2009-12-14,FEMALE,Chincha,987654347,Mónica Mendoza,987654348,madre7@email.com,14,2do,ACTIVE
+Emilio,Ortega,DNI,12345692,2011-07-19,MALE,Tumbes,987654349,Daniel Ortega,987654350,padre8@email.com,15,3ro,ACTIVE

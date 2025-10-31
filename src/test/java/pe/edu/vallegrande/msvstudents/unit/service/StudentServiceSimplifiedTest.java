@@ -220,8 +220,6 @@ class StudentServiceSimplifiedTest {
                 .thenReturn(Mono.just(testStudent));
         when(studentRepository.findById(anyString()))
                 .thenReturn(Mono.just(testStudent));
-        when(studentRepository.existsById(anyString()))
-                .thenReturn(Mono.just(true));
 
         // Act & Assert - Secuencia de operaciones
         Mono<Student> operationChain = studentRepository.save(testStudent)

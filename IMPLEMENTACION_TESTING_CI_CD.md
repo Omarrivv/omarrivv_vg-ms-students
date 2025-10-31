@@ -471,16 +471,15 @@ pipeline {
 
 ### 4.2 Crear Organización y Proyecto
 
-**4.2.1 Crear Organización:**
-- Clic en **"+"** → **"Create new organization"**
-- **Organization Key**: `vallegrande-org`
-- **Display Name**: `Valle Grande Organization`
+**4.2.1 Tu Organización (Ya existente):**
+- **Organization**: `omarrivv` ✅
+- **URL**: https://sonarcloud.io/organizations/omarrivv/projects
 - **Plan**: `Free` (para proyectos públicos)
 
 **4.2.2 Importar Proyecto:**
 - Clic en **"+"** → **"Analyze new project"**
-- **Seleccionar repositorio**: `vg-ms-students`
-- **Project Key**: `vallegrande_vg-ms-students`
+- **Seleccionar GitHub** → **"omarrivv_vg-ms-students"**
+- **Project Key**: `omarrivv_vg-ms-students`
 - **Display Name**: `VG MS Students - Microservicio de Estudiantes`
 
 ### 4.3 Generar Token de Acceso
@@ -553,8 +552,8 @@ sonar.qualitygate.wait=true
 ### 4.7 Interpretación de Reportes SonarCloud
 
 **🔍 Acceder al Dashboard:**
-- URL: https://sonarcloud.io/project/overview?id=vallegrande_vg-ms-students
-- Login con tu cuenta de GitHub/GitLab/Bitbucket
+- URL: https://sonarcloud.io/project/overview?id=omarrivv_vg-ms-students
+- Login con tu cuenta de GitHub (organización: omarrivv)
 
 **📊 Métricas Principales:**
 
@@ -905,7 +904,7 @@ mvn clean package -DskipTests
 # Ver reportes
 start target/site/jacoco/index.html                    # Cobertura
 start performance-tests/jmeter-report/index.html       # Performance
-start https://sonarcloud.io/project/overview?id=vallegrande_vg-ms-students # SonarCloud
+start https://sonarcloud.io/project/overview?id=omarrivv_vg-ms-students # SonarCloud
 ```
 
 ### 🔧 Configuración Inicial Requerida

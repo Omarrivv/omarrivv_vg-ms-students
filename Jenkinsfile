@@ -9,6 +9,7 @@ pipeline {
     environment {
         SONAR_HOST_URL = 'https://sonarcloud.io'
         SONAR_ORGANIZATION = 'omarrivv'
+        SONAR_PROJECT_KEY = 'Omarrivv_omarrivv_vg-ms-students'
         SONAR_TOKEN = credentials('sonarcloud-token')
         SLACK_CHANNEL = '#ci-cd-notifications'
         DOCKER_IMAGE = 'vg-ms-students'

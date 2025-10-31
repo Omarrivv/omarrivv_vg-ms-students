@@ -1,0 +1,33 @@
+# Dockerfile para Jenkins con todas tus configuraciones
+FROM jenkins/jenkins:2.528.1-lts-jdk17
+
+# Cambiar a usuario root para instalar dependencias
+USER root
+
+# Instalar Maven, Git y otras herramientas
+RUN apt-get update && apt-get install -y \
+    maven \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar plugins pre-instalados (opcional)
+COPY --chown=jenkins:jenkins plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
+
+# Copiar configuraciones de Jenkins
+COPY --chown=jenkins:jenkins jenkins_config/ /usr/share/jenkins/ref/
+
+# Variables de entorno
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+ENV JENKINS_USER=admin
+ENV JENKINS_PASS=admin123
+
+# Volver a usuario jenkins
+USER jenkins
+
+# Exponer puerto
+EXPOSE 8080 50000
+
+# Script de inicialización
+COPY init.groovy /usr/share/jenkins/ref/init.groovy.d/basic-security.groovy

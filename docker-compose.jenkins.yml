@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
+    container_name: jenkins-configured
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      # Persistir datos de Jenkins
+      - jenkins_home:/var/jenkins_home
+      # Acceso al socket de Docker (para builds)
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Montar tu proyecto
+      - ./:/workspace/vg-ms-students
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false -Xmx2g
+      - JENKINS_OPTS=--httpPort=8080
+    networks:
+      - jenkins-network
+    restart: unless-stopped
+
+  # Opcional: SonarQube local
+  sonarqube:
+    image: sonarqube:10.7.0-community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    networks:
+      - jenkins-network
+
+volumes:
+  jenkins_home:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+
+networks:
+  jenkins-network:
+    driver: bridge
